@@ -1,0 +1,26 @@
+{
+  "name": "los-magios-2.0---back-end---tp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fraperrone/magios.2.0-back-tp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fraperrone/magios.2.0-back-tp/issues"
+  },
+  "homepage": "https://github.com/fraperrone/magios.2.0-back-tp#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
