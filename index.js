@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const profesionalesRouter = require("./routes/profesionales.route");
+const clientesRouter = require("./routes/clientes.route");
 
 
 app.set("view engine", "pug");
@@ -15,6 +16,7 @@ app.get("/", (req, res) => {
 });
 
 app.use('/profesionales', profesionalesRouter);
+app.use('/clientes', clientesRouter);
 
 // Puerto de escucha
 app.listen(3000, () => {
