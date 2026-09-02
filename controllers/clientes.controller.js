@@ -16,7 +16,7 @@ exports.getClienteById = (req, res) => {
 
 // Crear un nuevo cliente
 exports.createCliente = (req, res) => {
-  const { nombre, email, telefono } = req.body;
+  const { nombre, email, telefono } = req.body || {};
   if (!nombre || !email || !telefono) {
     return res.status(400).json({ message: "Faltan datos: nombre, email, telefono" });
   }
