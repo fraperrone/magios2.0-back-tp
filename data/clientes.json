@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "nombre": "Juan Perez",
+    "email": "juan.perez@mail.com",
+    "telefono": "1122334455"
+  },
+  {
+    "id": 2,
+    "nombre": "Maria Gomez",
+    "email": "maria.gomez@mail.com",
+    "telefono": "1122334456"
+  },
+  {
+    "id": 3,
+    "nombre": "Carlos Lopez",
+    "email": "carlos.lopez@mail.com",
+    "telefono": "1122334457"
+  },
+  {
+    "id": 4,
+    "nombre": "Ana Martinez",
+    "email": "ana.martinez@mail.com",
+    "telefono": "1122334458"
+  },
+  {
+    "id": 5,
+    "nombre": "Luis Fernandez",
+    "email": "luis.fernandez@mail.com",
+    "telefono": "1122334459"
+  },
+  {
+    "id": 6,
+    "nombre": "Laura Rodriguez",
+    "email": "laura.rodriguez@mail.com",
+    "telefono": "1122334460"
+  },
+  {
+    "id": 7,
+    "nombre": "Pedro Sanchez",
+    "email": "pedro.sanchez@mail.com",
+    "telefono": "1122334461"
+  },
+  {
+    "id": 8,
+    "nombre": "Sofia Torres",
+    "email": "sofia.torres@mail.com",
+    "telefono": "1122334462"
+  },
+  {
+    "id": 9,
+    "nombre": "Diego Ramirez",
+    "email": "diego.ramirez@mail.com",
+    "telefono": "1122334463"
+  },
+  {
+    "id": 10,
+    "nombre": "Valentina Diaz",
+    "email": "valentina.diaz@mail.com",
+    "telefono": "1122334464"
+  }
+]
