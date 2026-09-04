@@ -1,6 +1,6 @@
 
 const router = require('express').Router();
-const profesionalesController = require('../controllers/profesionales.controller');
+const profesionalesController = require('../controllers/Profesionales.controller');
 
 router.get('/', profesionalesController.getProfesionales);
 router.get('/:id', profesionalesController.getProfesionalById);
