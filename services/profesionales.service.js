@@ -39,3 +39,12 @@ exports.update = (id, data) => {
     writeProfesionales(profesionales);
     return profesionales[index];
 };
+
+exports.delete = (id) => {
+    const profesionales = readProfesionales();
+    const index = profesionales.findIndex((p) => p.id === Number(id));
+    if (index === -1) return null;
+    const [deleted] = profesionales.splice(index, 1);
+    writeProfesionales(profesionales);
+    return deleted;
+};

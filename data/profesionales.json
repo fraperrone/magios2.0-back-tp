@@ -1,14 +1,5 @@
 [
   {
-    "id": 1,
-    "nombre": "Laura",
-    "apellido": "Fernández",
-    "especialidad": "Cardiología",
-    "email": "laura.fernandez@clinicamed.com",
-    "telefono": "+54 11 4567-8901",
-    "matricula": "MP-12345"
-  },
-  {
     "id": 2,
     "nombre": "Martín",
     "apellido": "Gómez",
