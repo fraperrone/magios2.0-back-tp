@@ -1,35 +1,40 @@
-// controllers/profesionalesController.js
 
-// Controlador para Profesionales
-// Pendiente de implementación de lógica
+const profesionalesService = require('../services/profesionales.service');
 
 // Obtener todos los profesionales
 exports.getProfesionales = (req, res) => {
-  // TODO: implementar lógica para listar profesionales
-  res.status(501).json({ message: "No implementado" });
+  res.json(profesionalesService.getAll());
 };
 
 // Obtener un profesional por ID
 exports.getProfesionalById = (req, res) => {
-  // TODO: implementar lógica para obtener un profesional específico
-  res.status(501).json({ message: "No implementado" });
+  const profesional = profesionalesService.getById(req.params.id);
+  if (!profesional) {
+    return res.status(404).json({ message: "Profesional no encontrado" });
+  }
+  res.json(profesional);
 };
 
 // Crear un nuevo profesional
 exports.createProfesional = (req, res) => {
-  // TODO: implementar lógica para crear un profesional
-  res.status(501).json({ message: "No implementado" });
+  const profesional = profesionalesService.create(req.body);
+  res.status(201).json(profesional);
 };
 
 // Actualizar un profesional existente
 exports.updateProfesional = (req, res) => {
-  // TODO: implementar lógica para actualizar un profesional
-  res.status(501).json({ message: "No implementado" });
+  const profesional = profesionalesService.update(req.params.id, req.body);
+  if (!profesional) {
+    return res.status(404).json({ message: "Profesional no encontrado" });
+  }
+  res.json(profesional);
 };
 
 // Eliminar un profesional
 exports.deleteProfesional = (req, res) => {
-  // TODO: implementar lógica para eliminar un profesional
-  res.status(501).json({ message: "No implementado" });
+  const profesional = profesionalesService.delete(req.params.id);
+  if (!profesional) {
+    return res.status(404).json({ message: "Profesional no encontrado" });
+  }
+  res.json({ message: "Profesional eliminado" });
 };
-
