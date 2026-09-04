@@ -1,0 +1,58 @@
+[
+  {
+    "id_turno": 1,
+    "id_profesional": 1,
+    "id_cliente": null,
+    "id_disponibilidad": 1,
+    "estado": "disponible"
+  },
+  {
+    "id_turno": 2,
+    "id_profesional": 1,
+    "id_cliente": 101,
+    "id_disponibilidad": 2,
+    "estado": "reservado"
+  },
+  {
+    "id_turno": 3,
+    "id_profesional": 1,
+    "id_cliente": 102,
+    "id_disponibilidad": 3,
+    "estado": "cancelado"
+  },
+  {
+    "id_turno": 4,
+    "id_profesional": 2,
+    "id_cliente": 103,
+    "id_disponibilidad": 4,
+    "estado": "reservado"
+  },
+  {
+    "id_turno": 5,
+    "id_profesional": 2,
+    "id_cliente": 104,
+    "id_disponibilidad": 5,
+    "estado": "atendido"
+  },
+  {
+    "id_turno": 6,
+    "id_profesional": 2,
+    "id_cliente": null,
+    "id_disponibilidad": 6,
+    "estado": "disponible"
+  },
+  {
+    "id_turno": 7,
+    "id_profesional": 3,
+    "id_cliente": null,
+    "id_disponibilidad": 7,
+    "estado": "disponible"
+  },
+  {
+    "id_turno": 8,
+    "id_profesional": 3,
+    "id_cliente": 105,
+    "id_disponibilidad": 8,
+    "estado": "reservado"
+  }
+]
