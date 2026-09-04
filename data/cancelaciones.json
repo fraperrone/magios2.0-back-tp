@@ -1,0 +1,10 @@
+[
+  {
+    "id_cancelacion": 1,
+    "id_turno": 3,
+    "id_profesional": 1,
+    "id_cliente": 102,
+    "fecha_cancelacion": "2026-09-05T09:15:00",
+    "motivo": "Reprogramación solicitada por el cliente"
+  }
+]
