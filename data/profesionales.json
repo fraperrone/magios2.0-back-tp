@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "nombre": "Laura",
+    "apellido": "Fernández",
+    "especialidad": "Cardiología",
+    "email": "laura.fernandez@clinicamed.com",
+    "telefono": "+54 11 4567-8901",
+    "matricula": "MP-12345"
+  },
+  {
+    "id": 2,
+    "nombre": "Martín",
+    "apellido": "Gómez",
+    "especialidad": "Pediatría",
+    "email": "martin.gomez@clinicamed.com",
+    "telefono": "+54 11 2345-6789",
+    "matricula": "MP-23456"
+  },
+  {
+    "id": 3,
+    "nombre": "Carolina",
+    "apellido": "López",
+    "especialidad": "Dermatología",
+    "email": "carolina.lopez@clinicamed.com",
+    "telefono": "+54 11 3456-7890",
+    "matricula": "MP-34567"
+  },
+  {
+    "id": 4,
+    "nombre": "Diego",
+    "apellido": "Pereyra",
+    "especialidad": "Neurología",
+    "email": "diego.pereyra@clinicamed.com",
+    "telefono": "+54 11 5678-9012",
+    "matricula": "MP-45678"
+  },
+  {
+    "id": 5,
+    "nombre": "María",
+    "apellido": "Suárez",
+    "especialidad": "Ginecología",
+    "email": "maria.suarez@clinicamed.com",
+    "telefono": "+54 11 6789-0123",
+    "matricula": "MP-56789"
+  }
+]
