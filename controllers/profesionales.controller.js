@@ -1,40 +1,43 @@
-
-const profesionalesService = require('../services/profesionales.service');
+const profesionalesService = require('../services/profesionales.service')
 
 // Obtener todos los profesionales
 exports.getProfesionales = (req, res) => {
-  res.json(profesionalesService.getAll());
-};
+  res.json(profesionalesService.getAll())
+}
 
 // Obtener un profesional por ID
 exports.getProfesionalById = (req, res) => {
-  const profesional = profesionalesService.getById(req.params.id);
+  const profesional = profesionalesService.getById(req.params.id)
   if (!profesional) {
-    return res.status(404).json({ message: "Profesional no encontrado" });
+    return res.status(404).json({ message: 'Profesional no encontrado' })
   }
-  res.json(profesional);
-};
+  res.json(profesional)
+}
 
 // Crear un nuevo profesional
 exports.createProfesional = (req, res) => {
-  const profesional = profesionalesService.create(req.body);
-  res.status(201).json(profesional);
-};
+  try {
+    const profesional = profesionalesService.create(req.body)
+    res.status(201).json(profesional)
+  } catch (error) {
+    res.status(400).json({ message: error.message })
+  }
+}
 
 // Actualizar un profesional existente
 exports.updateProfesional = (req, res) => {
-  const profesional = profesionalesService.update(req.params.id, req.body);
+  const profesional = profesionalesService.update(req.params.id, req.body)
   if (!profesional) {
-    return res.status(404).json({ message: "Profesional no encontrado" });
+    return res.status(404).json({ message: 'Profesional no encontrado' })
   }
-  res.json(profesional);
-};
+  res.json(profesional)
+}
 
 // Eliminar un profesional
 exports.deleteProfesional = (req, res) => {
-  const profesional = profesionalesService.delete(req.params.id);
+  const profesional = profesionalesService.delete(req.params.id)
   if (!profesional) {
-    return res.status(404).json({ message: "Profesional no encontrado" });
+    return res.status(404).json({ message: 'Profesional no encontrado' })
   }
-  res.json({ message: "Profesional eliminado" });
-};
+  res.json({ message: 'Profesional eliminado' })
+}

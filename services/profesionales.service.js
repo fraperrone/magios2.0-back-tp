@@ -21,10 +21,16 @@ exports.getById = (id) => readProfesionales().find((p) => p.id === Number(id));
 
 // Crea un profesional nuevo, generando un id que no esté en uso
 exports.create = (data) => {
+    if (!data.nombre || !data.apellido || !data.email || !data.telefono || !data.especialidad || !data.matricula) {
+        throw new Error("Faltan datos obligatorios para crear un profesional");
+    }
+    if (data.matricula && readProfesionales().some((p) => p.matricula === data.matricula)) {
+        throw new Error("La matrícula o el email ya están en uso por otro profesional");
+    }
     const profesionales = readProfesionales();
     let nextId = profesionales.reduce((max, p) => Math.max(max, p.id), 0) + 1;
     while (profesionales.some((p) => p.id === nextId)) nextId++;
-    const profesional = { id: nextId, nombre: data.nombre, email: data.email, telefono: data.telefono };
+    const profesional = { id: nextId, nombre: data.nombre, apellido: data.apellido, email: data.email, telefono: data.telefono, especialidad: data.especialidad, matricula: data.matricula };
     profesionales.push(profesional);
     writeProfesionales(profesionales);
     return profesional;

@@ -6,16 +6,7 @@
     "especialidad": "Pediatría",
     "email": "martin.gomez@clinicamed.com",
     "telefono": "+54 11 2345-6789",
-    "matricula": "MP-23456"
-  },
-  {
-    "id": 3,
-    "nombre": "Carolina",
-    "apellido": "López",
-    "especialidad": "Dermatología",
-    "email": "carolina.lopez@clinicamed.com",
-    "telefono": "+54 11 3456-7890",
-    "matricula": "MP-34567"
+    "matricula": "MP-23458"
   },
   {
     "id": 4,
@@ -34,5 +25,17 @@
     "email": "maria.suarez@clinicamed.com",
     "telefono": "+54 11 6789-0123",
     "matricula": "MP-56789"
+  },
+  {
+    "id": 6
+  },
+  {
+    "id": 7,
+    "nombre": "Martín",
+    "apellido": "Gómez",
+    "email": "martin.gomez@clinicamed.com",
+    "telefono": "+54 11 2345-6789",
+    "especialidad": "Pediatría",
+    "matricula": "MP-23459"
   }
 ]
