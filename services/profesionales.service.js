@@ -57,6 +57,22 @@ exports.update = (id, data) => {
     const profesionales = readProfesionales();
     const index = profesionales.findIndex((p) => p.id === Number(id));
     if (index === -1) return null;
+    //que no se repita matricula, email o telefono con otro profesional
+    if (data.matricula && profesionales.some((p) => p.matricula === data.matricula && p.id !== Number(id))) {
+        const err = new Error("La matrícula ya está en uso por otro profesional");
+        err.status = 400;
+        throw err;
+    }
+    if (data.email && profesionales.some((p) => p.email === data.email && p.id !== Number(id))) {
+        const err = new Error("El email ya está en uso por otro profesional");
+        err.status = 400;
+        throw err;
+    }
+    if (data.telefono && profesionales.some((p) => p.telefono === data.telefono && p.id !== Number(id))) {
+        const err = new Error("El teléfono ya está en uso por otro profesional");
+        err.status = 400;
+        throw err;
+    }
     profesionales[index] = { ...profesionales[index], ...data, id: profesionales[index].id };
     writeProfesionales(profesionales);
     return profesionales[index];

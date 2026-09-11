@@ -42,19 +42,27 @@ exports.createProfesional = (req, res) => {
 
 // Actualizar un profesional existente
 exports.updateProfesional = (req, res) => {
-  if (!validarId(req.params.id)) {
-    return res.status(400).json({ message: 'El ID del profesional debe ser un número entero' })
+
+  try{
+
+    if (!validarId(req.params.id)) {
+      return res.status(400).json({ message: 'El ID del profesional debe ser un número entero' })
+    }
+    if (!validarProfesional(req.body)) {
+      return res.status(400).json({
+        message: 'nombre, apellido, email, telefono, especialidad y matricula son obligatorios; email debe ser válido'
+      })
+    }
+  
+  
+    const profesional = profesionalesService.update(req.params.id, req.body)
+    if (!profesional) {
+      return res.status(404).json({ message: 'Profesional no encontrado' })
+    }
+    res.json(profesional)
+  } catch (error) {
+    res.status(error.message.includes('uso') ? 409 : 500).json({ message: error.message })
   }
-  if (!validarProfesional(req.body)) {
-    return res.status(400).json({
-      message: 'nombre, apellido, email, telefono, especialidad y matricula son obligatorios; email debe ser válido'
-    })
-  }
-  const profesional = profesionalesService.update(req.params.id, req.body)
-  if (!profesional) {
-    return res.status(404).json({ message: 'Profesional no encontrado' })
-  }
-  res.json(profesional)
 }
 
 // Eliminar un profesional

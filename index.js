@@ -24,7 +24,7 @@ app.use('/turnos', turnosRouter);
 app.use('/disponibilidades', disponibilidadRouter);
 
 app.use((req, res) => {
-  res.status(404).json({ error: 'Recurso no encontrado' });
+  res.status(404).json({ error: 'Ruta no encontrada' });
 });
 
 app.use((error, req, res, next) => {
@@ -36,11 +36,7 @@ app.use((error, req, res, next) => {
 });
 
 
-// Manejo de errores 404
-app.use((req, res) => {
-  res.status(404).json({ message: "Ruta no encontrada" });
-}
-);
+
 
 // Puerto de escucha
 app.listen(3000, () => {
