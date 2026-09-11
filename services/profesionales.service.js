@@ -37,6 +37,12 @@ exports.create = (data) => {
         err.status = 400;
         throw err;
     }
+    if (data.telefono && readProfesionales().some((p) => p.telefono === data.telefono)) {
+        const err = new Error("El teléfono ya está en uso por otro profesional");
+        err.status = 400;
+        throw err;
+    }
+
     const profesionales = readProfesionales();
     let nextId = profesionales.reduce((max, p) => Math.max(max, p.id), 0) + 1;
     while (profesionales.some((p) => p.id === nextId)) nextId++;
