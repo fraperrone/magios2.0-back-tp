@@ -6,9 +6,10 @@ los datos en archivos JSON (en esta primera instancia no se utiliza MongoDB).
 
 ## Integrantes y responsabilidades
 
-- **Franco Perrone Rey** - estructura general y CRUD de profesionales.
-- **David Fernando Giannoni** - consultas, pruebas y documentación.
-
+* **Franco Perrone Rey:** Desarrollador de estructura general de proyecto, de la entidad profesionales su CRUD, de las reglas especificas del negocio y pruebas/ queries en postman.
+* **Carlos Sebastián Gauto Martina:** Programador de CRUD y lógica de la disponibilidad horaria y sus pruebas en Postman.
+* **David Fernando Giannoni:** Programador de consultas con filtros, pruebas de integración y documentación.
+* **Damian Gorosito:** Programador de CRUD y lógica del módulo de turnos, actualización de estados y sus pruebas en Postman.
 
 ## Tecnologías
 
