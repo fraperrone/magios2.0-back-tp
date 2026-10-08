@@ -18,7 +18,10 @@
   },
   "homepage": "https://github.com/fraperrone/magios.2.0-back-tp#readme",
   "dependencies": {
+    "dotenv": "^18.0.6",
     "express": "^5.2.1",
+    "mongodb": "^7.7.0",
+    "mongoose": "^9.11.1",
     "pug": "^3.0.4"
   },
   "devDependencies": {

@@ -5,9 +5,16 @@ const clientesRouter = require("./routes/clientes.route");
 const turnosRouter = require("./routes/turnos.routes");
 const disponibilidadRouter = require("./routes/disponibilidad.route");
 const cancelacionesRouter = require("./routes/cancelaciones.route");
+const connectDB = require("./mongo/client");
+
 
 app.set("view engine", "pug");
 app.set("views", "./views");
+
+// conexion a mongodb
+
+
+connectDB();
 
 // Middleware para parsear JSON
 app.use(express.json());
