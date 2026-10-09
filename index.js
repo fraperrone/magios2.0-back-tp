@@ -6,13 +6,12 @@ const turnosRouter = require("./routes/turnos.routes");
 const disponibilidadRouter = require("./routes/disponibilidad.route");
 const cancelacionesRouter = require("./routes/cancelaciones.route");
 const connectDB = require("./mongo/client");
-
+const handleErrors = require("./middlewares/handleErrors");
 
 app.set("view engine", "pug");
 app.set("views", "./views");
 
 // conexion a mongodb
-
 
 connectDB();
 
@@ -24,30 +23,14 @@ app.get("/", (req, res) => {
   res.render("home", { title: "Home Page" });
 });
 
-app.use('/profesionales', profesionalesRouter);
-app.use('/clientes', clientesRouter);
-app.use('/cancelaciones', cancelacionesRouter);
-app.use('/turnos', turnosRouter);
-app.use('/disponibilidades', disponibilidadRouter);
-
-app.use((req, res) => {
-  res.status(404).json({ error: 'Recurso no encontrado' });
-});
-
-app.use((error, req, res, next) => {
-  if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
-    return res.status(400).json({ error: 'El body debe contener JSON válido' });
-  }
-  console.error(error);
-  res.status(500).json({ error: 'Error interno del servidor' });
-});
+app.use("/profesionales", profesionalesRouter);
+app.use("/clientes", clientesRouter);
+app.use("/cancelaciones", cancelacionesRouter);
+app.use("/turnos", turnosRouter);
+app.use("/disponibilidades", disponibilidadRouter);
 
 
-// Manejo de errores 404
-app.use((req, res) => {
-  res.status(404).json({ message: "Ruta no encontrada" });
-}
-);
+app.use(handleErrors);
 
 // Puerto de escucha
 app.listen(3000, () => {
