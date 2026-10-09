@@ -12,22 +12,22 @@ const validarCliente = (data) => {
 };
 
 // Obtener todos los clientes
-exports.getClientes = (req, res) => {
-  res.json(clientesService.getAll());
+exports.getClientes = async (req, res) => {
+  res.json(await clientesService.getAll());
 };
 
 // Obtener un cliente por ID
-exports.getClienteById = (req, res) => {
+exports.getClienteById = async (req, res) => {
   if (!validarId(req.params.id)) {
     return res.status(400).json({ message: 'El ID del cliente debe ser un número entero' });
   }
-  const cliente = clientesService.getById(req.params.id);
+  const cliente = await clientesService.getById(req.params.id);
   if (!cliente) return res.status(404).json({ message: "Cliente no encontrado" });
   res.json(cliente);
 };
 
 // Crear un nuevo cliente
-exports.createCliente = (req, res) => {
+exports.createCliente = async (req, res) => {
   const { nombre, email, telefono } = req.body || {};
   if (!validarCliente({ nombre, email, telefono })) {
     return res.status(400).json({
@@ -35,7 +35,7 @@ exports.createCliente = (req, res) => {
     });
   }
   try {
-    const cliente = clientesService.create({ nombre: nombre.trim(), email: email.trim(), telefono: telefono.trim() });
+    const cliente = await clientesService.create({ nombre: nombre.trim(), email: email.trim(), telefono: telefono.trim() });
     res.status(201).json(cliente);
   } catch (error) {
     res.status(500).json({ message: 'No se pudo crear el cliente' });
@@ -43,7 +43,7 @@ exports.createCliente = (req, res) => {
 };
 
 // Actualizar un cliente existente
-exports.updateCliente = (req, res) => {
+exports.updateCliente = async (req, res) => {
   if (!validarId(req.params.id)) {
     return res.status(400).json({ message: 'El ID del cliente debe ser un número entero' });
   }
@@ -52,7 +52,7 @@ exports.updateCliente = (req, res) => {
       message: 'nombre, email y telefono son obligatorios; email debe tener un formato válido'
     });
   }
-  const cliente = clientesService.update(req.params.id, {
+  const cliente = await clientesService.update(req.params.id, {
     nombre: req.body.nombre.trim(),
     email: req.body.email.trim(),
     telefono: req.body.telefono.trim()
@@ -62,11 +62,11 @@ exports.updateCliente = (req, res) => {
 };
 
 // Eliminar un cliente
-exports.deleteCliente = (req, res) => {
+exports.deleteCliente = async (req, res) => {
   if (!validarId(req.params.id)) {
     return res.status(400).json({ message: 'El ID del cliente debe ser un número entero' });
   }
-  const eliminado = clientesService.remove(req.params.id);
+  const eliminado = await clientesService.remove(req.params.id);
   if (!eliminado) return res.status(404).json({ message: "Cliente no encontrado" });
   res.status(204).send();
 };
