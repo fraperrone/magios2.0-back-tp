@@ -19,7 +19,8 @@ export const getById = async (id) => {
   try {
     return await Profesional.findById(id);
   } catch (e) {
-    return null;
+    if (esIdInvalido(e)) return null;
+    throw e;
   }
 };
 

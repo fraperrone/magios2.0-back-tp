@@ -28,11 +28,7 @@ class DisponibilidadService {
 
   // Obtener disponibilidades por profesional
   async getByProfesional(profesionalId) {
-    try {
-      return await Disponibilidad.find({ profesionalId }).sort({ dia: 1, horaInicio: 1 });
-    } catch (e) {
-      return [];
-    }
+    return await Disponibilidad.find({ profesionalId }).sort({ dia: 1, horaInicio: 1 });
   }
 
   // Obtener disponibilidades por día

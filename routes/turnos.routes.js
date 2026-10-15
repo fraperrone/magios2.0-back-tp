@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.get('/', turnosController.obtenerTurnos);
 router.post('/', turnosController.crearTurno);
+router.patch('/:id/estado', turnosController.cambiarEstado);
 router.put('/:id', turnosController.cambiarEstado);
 
 export default router;

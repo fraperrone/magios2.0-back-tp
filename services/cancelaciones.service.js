@@ -1,52 +1,27 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import mongoose from "mongoose";
+import Cancelacion from "../models/Cancelacion.model.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const cancelacionesFilePath = path.join(__dirname, '../data/cancelaciones.json');
+export const getAllCancelaciones = () => Cancelacion.find().sort({ createdAt: -1 });
 
-function getCancelaciones() {
-  const cancelacionesData = fs.readFileSync(cancelacionesFilePath, 'utf-8')
-  return JSON.parse(cancelacionesData)
-}
+export const getCancelacionById = async (id) => {
+  if (!mongoose.isObjectIdOrHexString(id)) return null;
+  return Cancelacion.findById(id);
+};
 
-function saveCancelaciones(cancelaciones) {
-  fs.writeFileSync(
-    cancelacionesFilePath,
-    JSON.stringify(cancelaciones, null, 2),
-  )
-}
+export const getCancelacionByTurnoId = (turnoId) =>
+  Cancelacion.findOne({ id_turno: turnoId });
 
-export const getAllCancelaciones = () => {
-  return getCancelaciones()
-}
-
-export const getCancelacionById = (id) => {
-  const cancelaciones = getCancelaciones()
-  return cancelaciones.find((c) => c.id_cancelacion === Number(id))
-}
-
-export const createCancelacion = (data) => {
-  const cancelaciones = getCancelaciones()
-  let nextId =
-    cancelaciones.reduce((max, c) => Math.max(max, c.id_cancelacion), 0) + 1
-  while (cancelaciones.some((c) => c.id_cancelacion === nextId)) nextId++
-  const newCancelacion = { ...data, id_cancelacion: nextId }
-  cancelaciones.push(newCancelacion)
-  saveCancelaciones(cancelaciones)
-  return newCancelacion
-}
-
-export const updateCancelacion = (id, data) => {
-  const cancelaciones = getCancelaciones()
-  const index = cancelaciones.findIndex((c) => c.id_cancelacion === Number(id))
-  if (index === -1) return null
-  cancelaciones[index] = {
-    ...cancelaciones[index],
-    ...data,
-    id_cancelacion: cancelaciones[index].id_cancelacion,
+export const createCancelacion = async (data) => {
+  try {
+    return await Cancelacion.create(data);
+  } catch (error) {
+    if (error.code === 11000) {
+      const duplicateError = new Error("Ya existe una cancelación para este turno");
+      duplicateError.status = 409;
+      throw duplicateError;
+    }
+    throw error;
   }
-  saveCancelaciones(cancelaciones)
-  return cancelaciones[index]
-}
+};
+
+export const deleteCancelacion = (id) => Cancelacion.findByIdAndDelete(id);
