@@ -1,11 +1,33 @@
 import mongoose from "mongoose";
 import Cancelacion from "../models/Cancelacion.model.js";
 
-export const getAllCancelaciones = () => Cancelacion.find().sort({ createdAt: -1 });
+export const getAllCancelaciones = (populate = false) => {
+  const query = Cancelacion.find().sort({ createdAt: -1 });
+  if (populate) {
+    query.populate({
+      path: "id_turno",
+      populate: [
+        { path: "profesionalId" },
+        { path: "clienteId" }
+      ]
+    });
+  }
+  return query;
+};
 
-export const getCancelacionById = async (id) => {
+export const getCancelacionById = async (id, populate = false) => {
   if (!mongoose.isObjectIdOrHexString(id)) return null;
-  return Cancelacion.findById(id);
+  const query = Cancelacion.findById(id);
+  if (populate) {
+    query.populate({
+      path: "id_turno",
+      populate: [
+        { path: "profesionalId" },
+        { path: "clienteId" }
+      ]
+    });
+  }
+  return query;
 };
 
 export const getCancelacionByTurnoId = (turnoId) =>

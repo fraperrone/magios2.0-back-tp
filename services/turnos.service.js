@@ -1,13 +1,21 @@
 import mongoose from "mongoose";
 import Turno from "../models/Turno.model.js";
 
-export const getAllTurnos = (filters = {}) => {
-  return Turno.find(filters).sort({ fecha: 1, hora: 1 });
+export const getAllTurnos = (filters = {}, populate = false) => {
+  const query = Turno.find(filters).sort({ fecha: 1, hora: 1 });
+  if (populate) {
+    query.populate("profesionalId").populate("clienteId");
+  }
+  return query;
 };
 
-export const getTurnoById = async (id) => {
+export const getTurnoById = async (id, populate = false) => {
   if (!mongoose.isObjectIdOrHexString(id)) return null;
-  return Turno.findById(id);
+  const query = Turno.findById(id);
+  if (populate) {
+    query.populate("profesionalId").populate("clienteId");
+  }
+  return query;
 };
 
 export const getReservedByProfessional = (profesionalId, fecha, hora, excludeId) => {

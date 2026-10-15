@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import mongoose from "mongoose";
-import { cambiarEstado, crearTurno, obtenerTurnos } from "../controllers/turnos.controller.js";
-import { createCancelacion, sanitizarMotivoCancelacion } from "../controllers/cancelaciones.controller.js";
+import { cambiarEstado, crearTurno, obtenerTurnos, obtenerTurnoPorId, eliminarTurno } from "../controllers/turnos.controller.js";
+import { createCancelacion, sanitizarMotivoCancelacion, getCancelacionById } from "../controllers/cancelaciones.controller.js";
 import Cancelacion from "../models/Cancelacion.model.js";
 import Turno from "../models/Turno.model.js";
 
@@ -102,10 +102,18 @@ test("Las rutas de turnos rechazan identificadores inválidos antes de consultar
   res = crearResponse();
   await cambiarEstado({ params: { id: "bad" }, body: { estado: "cancelado" } }, res);
   assert.equal(res.statusCode, 400);
+
+  res = crearResponse();
+  await obtenerTurnoPorId({ params: { id: "bad" } }, res);
+  assert.equal(res.statusCode, 400);
+
+  res = crearResponse();
+  await eliminarTurno({ params: { id: "bad" } }, res);
+  assert.equal(res.statusCode, 400);
 });
 
 test("La ruta de cancelación rechaza identificadores que no sean ObjectId", async () => {
-  const res = crearResponse();
+  let res = crearResponse();
   await createCancelacion({
     body: {
       id_turno: "bad",
@@ -115,6 +123,10 @@ test("La ruta de cancelación rechaza identificadores que no sean ObjectId", asy
     }
   }, res);
 
+  assert.equal(res.statusCode, 400);
+
+  res = crearResponse();
+  await getCancelacionById({ params: { id: "bad" } }, res);
   assert.equal(res.statusCode, 400);
 });
 
