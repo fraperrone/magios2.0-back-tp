@@ -4,14 +4,17 @@ import * as validacionesClientes from "../middlewares/validacionesClientes.js";
 
 const router = express.Router();
 
-router.get('/api/', clientesController.getClientes);
-router.get('/api/:id', clientesController.getClienteById);
-router.post('/api/', validacionesClientes.validarDatos, clientesController.createCliente);
-router.put('/api/:id', validacionesClientes.validarDatos, clientesController.updateCliente);
-router.delete('/:id', clientesController.deleteCliente);
+// 1. Vistas (Definidas primero para que :id no capture "vista")
+router.get("/vista", clientesController.renderClientes);
+router.get("/vista/:id", clientesController.renderClienteById);
 
-// ruter para vistas solo muestra -
-router.get('/vista', clientesController.renderClientes);
-router.get('/vista/:id', clientesController.renderClienteById);
+// 2. Rutas de colección (raíz)
+router.get(["/", "/api"], clientesController.getClientes);
+router.post(["/", "/api"], validacionesClientes.validarDatos, clientesController.createCliente);
+
+// 3. Rutas parametrizadas por :id (al final para evitar colisiones)
+router.get(["/:id", "/api/:id"], clientesController.getClienteById);
+router.put(["/:id", "/api/:id"], validacionesClientes.validarDatos, clientesController.updateCliente);
+router.delete(["/:id", "/api/:id"], clientesController.deleteCliente);
 
 export default router;
