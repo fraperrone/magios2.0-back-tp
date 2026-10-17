@@ -1,0 +1,37 @@
+extends layout
+
+block content
+  h1 Profesionales
+
+  h2 Nuevo profesional
+  form(action="/profesionales/api/" method="POST")
+    label(for="nombre") Nombre:
+    input(type="text" name="nombre" id="nombre" required)
+    br
+    label(for="apellido") Apellido:
+    input(type="text" name="apellido" id="apellido" required)
+    br
+    label(for="email") Email:
+    input(type="email" name="email" id="email" required)
+    br
+    label(for="telefono") Teléfono:
+    input(type="text" name="telefono" id="telefono" required)
+    br
+    label(for="especialidad") Especialidad:
+    input(type="text" name="especialidad" id="especialidad" required)
+    br
+    label(for="matricula") Matrícula:
+    input(type="text" name="matricula" id="matricula" required)
+    br
+    button(type="submit") Guardar
+
+  h2 Lista de profesionales
+  if profesionales.length
+    ul
+      each profesional in profesionales
+        li
+          a(href="/profesionales/vista/" + profesional._id) profesional._id
+          h2= profesional.nombre
+          p= profesional.email
+  else
+    p No hay profesionales cargados.

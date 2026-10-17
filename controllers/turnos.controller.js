@@ -1,317 +1,391 @@
-const fs = require('fs');
-const path = require('path');
-const profesionalesService = require('../services/profesionales.service');
-const clientesService = require('../services/clientes.service');
-const DisponibilidadService = require('../services/disponibilidad.service');
+import mongoose from "mongoose";
+import * as profesionalesService from "../services/profesionales.service.js";
+import * as clientesService from "../services/clientes.service.js";
+import * as turnosService from "../services/turnos.service.js";
+import DisponibilidadService from "../services/disponibilidad.service.js";
 
 const disponibilidadService = new DisponibilidadService();
-
-const filePath = path.join(__dirname, '../data/turnos.json');
-
-// Auxiliares para JSON
-const leerTurnos = () => {
-  if (!fs.existsSync(filePath)) return [];
-
-  const data = fs.readFileSync(filePath, 'utf-8');
-
-  return JSON.parse(data || '[]');
-};
-
-const guardarTurnos = (turnos) => {
-  fs.writeFileSync(
-    filePath,
-    JSON.stringify(turnos, null, 2),
-    'utf-8'
-  );
-};
+const estadosValidos = ["reservado", "cancelado", "atendido"];
+const horaValida = /^([01]\d|2[0-3]):[0-5]\d$/;
+const diasSemana = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
 
 const fechaValida = (fecha) => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
-  const [anio, mes, dia] = fecha.split('-').map(Number);
+  if (typeof fecha !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
+  const [anio, mes, dia] = fecha.split("-").map(Number);
   const fechaParseada = new Date(Date.UTC(anio, mes - 1, dia));
   return fechaParseada.getUTCFullYear() === anio
     && fechaParseada.getUTCMonth() === mes - 1
     && fechaParseada.getUTCDate() === dia;
 };
 
-// --- Controladores ---
+const idMongoValido = (id) => mongoose.isObjectIdOrHexString(id);
+const conflictoDuplicado = (error) => error?.code === 11000;
 
-// GET: Obtener todos los turnos
-exports.obtenerTurnos = (req, res) => {
+// API: GET /api/turnos
+export const obtenerTurnos = async (req, res) => {
   try {
     const { profesionalId, clienteId, fecha, estado } = req.query;
-    const filtros = { profesionalId, clienteId, fecha, estado };
-    const filtrosUsados = Object.entries(filtros).filter(([, valor]) => valor !== undefined);
-    const estadosValidos = ['reservado', 'cancelado', 'atendido'];
+    const filters = {};
 
-    if (profesionalId !== undefined && !Number.isInteger(Number(profesionalId))) {
-      return res.status(400).json({ error: 'profesionalId debe ser un número entero' });
-    }
-    if (clienteId !== undefined && !Number.isInteger(Number(clienteId))) {
-      return res.status(400).json({ error: 'clienteId debe ser un número entero' });
-    }
-    if (fecha !== undefined && !fechaValida(fecha)) {
-      return res.status(400).json({ error: 'fecha debe tener el formato YYYY-MM-DD y ser válida' });
-    }
-    if (estado !== undefined && !estadosValidos.includes(estado)) {
-      return res.status(400).json({ error: 'estado debe ser reservado, cancelado o atendido' });
-    }
-
-    const turnos = leerTurnos().filter((turno) => filtrosUsados.every(([campo, valor]) => {
-      if (campo === 'profesionalId' || campo === 'clienteId') {
-        return Number(turno[campo]) === Number(valor);
+    if (profesionalId !== undefined) {
+      if (!idMongoValido(profesionalId)) {
+        return res.status(400).json({ error: "profesionalId debe ser un ObjectId válido" });
       }
-      return turno[campo] === valor;
-    }));
+      filters.profesionalId = profesionalId;
+    }
+    if (clienteId !== undefined) {
+      if (!idMongoValido(clienteId)) {
+        return res.status(400).json({ error: "clienteId debe ser un ObjectId válido" });
+      }
+      filters.clienteId = clienteId;
+    }
+    if (fecha !== undefined) {
+      if (!fechaValida(fecha)) {
+        return res.status(400).json({ error: "fecha debe tener el formato YYYY-MM-DD y ser válida" });
+      }
+      filters.fecha = fecha;
+    }
+    if (estado !== undefined) {
+      if (!estadosValidos.includes(estado)) {
+        return res.status(400).json({ error: "estado debe ser reservado, cancelado o atendido" });
+      }
+      filters.estado = estado;
+    }
 
-    res.status(200).json(turnos);
+    const turnos = await turnosService.getAllTurnos(filters);
+    return res.status(200).json(turnos);
   } catch (error) {
     console.error(error);
-
-    res.status(500).json({
-      error: 'Error al obtener los turnos'
-    });
+    return res.status(500).json({ error: "Error al obtener los turnos" });
   }
 };
 
-
-// POST: Crear / Reservar un turno
-exports.crearTurno = (req, res) => {
+// API: GET /api/turnos/:id (Endpoint faltante)
+export const obtenerTurnoPorId = async (req, res) => {
   try {
-    const {
+    const { id } = req.params;
+    if (!idMongoValido(id)) {
+      return res.status(400).json({ error: "El ID del turno debe ser un ObjectId válido" });
+    }
+
+    const turno = await turnosService.getTurnoById(id, true);
+    if (!turno) {
+      return res.status(404).json({ error: "Turno no encontrado" });
+    }
+
+    return res.status(200).json(turno);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Error al obtener el turno" });
+  }
+};
+
+// API: POST /api/turnos
+export const crearTurno = async (req, res) => {
+  try {
+    const { profesionalId, clienteId, fecha, hora } = req.body || {};
+
+    if (profesionalId === undefined || clienteId === undefined || !fecha || !hora) {
+      return res.status(400).json({ error: "Todos los campos son obligatorios" });
+    }
+    if (!idMongoValido(profesionalId) || !idMongoValido(clienteId)) {
+      return res.status(400).json({ error: "profesionalId y clienteId deben ser ObjectId válidos" });
+    }
+    if (!fechaValida(fecha)) {
+      return res.status(400).json({ error: "La fecha debe ser válida y tener el formato YYYY-MM-DD" });
+    }
+    if (typeof hora !== "string" || !horaValida.test(hora)) {
+      return res.status(400).json({ error: "La hora debe tener el formato HH:MM" });
+    }
+
+    if (!await profesionalesService.getById(profesionalId)) {
+      return res.status(404).json({ error: "El profesional indicado no existe" });
+    }
+    if (!await clientesService.getById(clienteId)) {
+      return res.status(404).json({ error: "El cliente indicado no existe" });
+    }
+
+    const [anio, mes, diaNum] = fecha.split("-").map(Number);
+    const dia = diasSemana[new Date(Date.UTC(anio, mes - 1, diaNum)).getUTCDay()];
+    const disponibilidades = await disponibilidadService.getByProfesional(profesionalId);
+
+    let tieneDisponibilidad = false;
+    if (disponibilidades && disponibilidades.length > 0) {
+      tieneDisponibilidad = disponibilidades.some((franja) =>
+        franja.activo !== false
+        && franja.dia.toLowerCase() === dia
+        && franja.horaInicio <= hora
+        && hora <= franja.horaFin
+      );
+    } else {
+      // Si el profesional no tiene franjas específicas configuradas, se admite horario laboral estándar
+      const esLaborable = dia !== "domingo";
+      const horarioValido = dia === "sabado"
+        ? (hora >= "08:00" && hora <= "14:00")
+        : (hora >= "08:00" && hora <= "20:00");
+      tieneDisponibilidad = esLaborable && horarioValido;
+    }
+
+    if (!tieneDisponibilidad) {
+      return res.status(400).json({ error: "El profesional no tiene disponibilidad en ese horario" });
+    }
+
+    if (await turnosService.getReservedByProfessional(profesionalId, fecha, hora)) {
+      return res.status(409).json({ error: "El profesional ya tiene un turno reservado en ese horario" });
+    }
+    if (await turnosService.getReservedByClient(clienteId, fecha, hora)) {
+      return res.status(409).json({ error: "El cliente ya tiene un turno reservado a esa hora" });
+    }
+
+    const turno = await turnosService.createTurno({
       profesionalId,
       clienteId,
       fecha,
       hora,
-      
-    } = req.body || {};
-
-    // Validar que lleguen todos los datos
-    if (
-      profesionalId === undefined ||
-      clienteId === undefined ||
-      !fecha ||
-      !hora
-    ) {
-      return res.status(400).json({
-        error: 'Todos los campos son obligatorios'
-      });
-    }
-
-    // Convertir IDs a números, para que no haya comflictos en caso que ingrese un str en vez de int
-    const profesionalIdNum = Number(profesionalId);
-    const clienteIdNum = Number(clienteId);
-
-    if (
-      !Number.isInteger(profesionalIdNum) ||
-      !Number.isInteger(clienteIdNum)
-    ) {
-      return res.status(400).json({
-        error: 'profesionalId y clienteId deben ser números'
-      });
-    }
-
-    // Validar formato de fecha YYYY-MM-DD
-    const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
-
-    if (!fechaRegex.test(fecha) || !fechaValida(fecha)) {
-      return res.status(400).json({
-        error: 'La fecha debe ser válida y tener el formato YYYY-MM-DD'
-      });
-    }
-
-    // Validar formato de hora HH:MM
-    const horaRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-    if (!horaRegex.test(hora)) {
-      return res.status(400).json({
-        error: 'La hora debe tener el formato HH:MM'
-      });
-    }
-
-    if (!profesionalesService.getById(profesionalIdNum)) {
-      return res.status(404).json({
-        error: 'El profesional indicado no existe'
-      });
-    }
-
-    if (!clientesService.getById(clienteIdNum)) {
-      return res.status(404).json({
-        error: 'El cliente indicado no existe'
-      });
-    }
-
-    const turnos = leerTurnos();
-
-    // Regla 1:
-    // Un profesional no puede tener dos turnos
-    // reservados en el mismo horario.
-    const profesionalOcupado = turnos.some(t =>
-      Number(t.profesionalId) === profesionalIdNum &&
-      t.fecha === fecha &&
-      t.hora === hora &&
-      t.estado === 'reservado'
-    );
-
-    if (profesionalOcupado) {
-      return res.status(409).json({
-        error: 'El profesional ya tiene un turno reservado en ese horario'
-      });
-    }
-
-    // Regla 2:
-    // Un cliente no puede tener dos turnos
-    // reservados en el mismo horario.
-    const clienteDuplicado = turnos.some(t =>
-      Number(t.clienteId) === clienteIdNum &&
-      t.fecha === fecha &&
-      t.hora === hora &&
-      t.estado === 'reservado'
-    );
-
-    if (clienteDuplicado) {
-      return res.status(409).json({
-        error: 'El cliente ya tiene un turno reservado a esa hora'
-      });
-    }
-
-    // regla 3: Solo se pueden reservar horarios disponibles y dias que estén en la disponibilidad del profesional.
-    const profesionalDisponibilidad = disponibilidadService.getByProfesional(profesionalIdNum);
-    
-    const disponibilidad = profesionalDisponibilidad.find(d =>
-      
-      d.horaInicio <= hora &&
-      d.horaFin >= hora
-    );
-    if (!disponibilidad) {
-      return res.status(400).json({
-        error: 'El profesional no tiene disponibilidad en ese horario'
-      });
-    }
-
-
-    // Generar un ID nuevo tomando el ID más alto
-    const nuevoId = turnos.length > 0
-      ? Math.max(...turnos.map(t => Number(t.id) || 0)) + 1
-      : 1;
-
-    const nuevoTurno = {
-      id: nuevoId,
-      profesionalId: profesionalIdNum,
-      clienteId: clienteIdNum,
-      fecha,
-      hora,
-      estado: 'reservado'
-    };
-
-    turnos.push(nuevoTurno);
-
-    guardarTurnos(turnos);
-
-    res.status(201).json({
-      mensaje: 'Turno reservado exitosamente',
-      turno: nuevoTurno
+      estado: "reservado"
     });
 
+    return res.status(201).json({
+      mensaje: "Turno reservado exitosamente",
+      turno
+    });
   } catch (error) {
     console.error(error);
+    if (conflictoDuplicado(error)) {
+      return res.status(409).json({ error: "El turno se superpone con una reserva existente" });
+    }
+    return res.status(500).json({ error: "Error interno al reservar el turno" });
+  }
+};
 
-    res.status(500).json({
-      error: 'Error interno al reservar el turno'
+// API: PATCH /api/turnos/:id/estado y PUT /api/turnos/:id
+export const cambiarEstado = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { estado } = req.body || {};
+
+    if (!estadosValidos.includes(estado)) {
+      return res.status(400).json({ error: "Estado no válido. Use: reservado, cancelado o atendido" });
+    }
+    if (!idMongoValido(id)) {
+      return res.status(400).json({ error: "El ID del turno debe ser un ObjectId válido" });
+    }
+
+    const turno = await turnosService.getTurnoById(id);
+    if (!turno) {
+      return res.status(404).json({ error: "Turno no encontrado" });
+    }
+
+    if (estado === "reservado") {
+      const [profesionalOcupado, clienteDuplicado] = await Promise.all([
+        turnosService.getReservedByProfessional(turno.profesionalId, turno.fecha, turno.hora, id),
+        turnosService.getReservedByClient(turno.clienteId, turno.fecha, turno.hora, id)
+      ]);
+      if (profesionalOcupado) {
+        return res.status(409).json({ error: "El profesional ya tiene otro turno reservado en ese horario" });
+      }
+      if (clienteDuplicado) {
+        return res.status(409).json({ error: "El cliente ya tiene otro turno reservado en ese horario" });
+      }
+    }
+
+    const turnoActualizado = await turnosService.updateTurno(id, { estado });
+    if (!turnoActualizado) {
+      return res.status(404).json({ error: "Turno no encontrado" });
+    }
+    return res.status(200).json({
+      mensaje: `El turno cambió a estado: ${estado}`,
+      turno: turnoActualizado
+    });
+  } catch (error) {
+    console.error(error);
+    if (conflictoDuplicado(error)) {
+      return res.status(409).json({ error: "El turno se superpone con una reserva existente" });
+    }
+    return res.status(500).json({ error: "Error al actualizar el estado del turno" });
+  }
+};
+
+// API: DELETE /api/turnos/:id (Endpoint faltante)
+export const eliminarTurno = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!idMongoValido(id)) {
+      return res.status(400).json({ error: "El ID del turno debe ser un ObjectId válido" });
+    }
+
+    const eliminado = await turnosService.deleteTurno(id);
+    if (!eliminado) {
+      return res.status(404).json({ error: "Turno no encontrado" });
+    }
+
+    return res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Error al eliminar el turno" });
+  }
+};
+
+// Vistas Pug: GET /vista/turnos
+export const renderTurnos = async (req, res) => {
+  try {
+    const { profesionalId, clienteId, fecha, estado, error, success } = req.query;
+    const filters = {};
+
+    if (profesionalId && idMongoValido(profesionalId)) filters.profesionalId = profesionalId;
+    if (clienteId && idMongoValido(clienteId)) filters.clienteId = clienteId;
+    if (fecha && fechaValida(fecha)) filters.fecha = fecha;
+    if (estado && estadosValidos.includes(estado)) filters.estado = estado;
+
+    const [turnos, profesionales, clientes] = await Promise.all([
+      turnosService.getAllTurnos(filters, true),
+      profesionalesService.getAll(),
+      clientesService.getAll()
+    ]);
+
+    return res.render("turnos", {
+      title: "Gestión de Turnos",
+      turnos,
+      profesionales,
+      clientes,
+      filtros: req.query,
+      error,
+      success
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).render("turnos", {
+      title: "Gestión de Turnos",
+      turnos: [],
+      profesionales: [],
+      clientes: [],
+      filtros: req.query,
+      error: "Error interno al cargar los turnos"
     });
   }
 };
 
-
-// PATCH: Modificar el estado del turno
-exports.cambiarEstado = (req, res) => {
+// Vistas Pug: GET /vista/turnos/:id
+export const renderTurnoDetalle = async (req, res) => {
   try {
     const { id } = req.params;
-    const { estado } = req.body;
-
-    //Regla 3: los estados que puede tener un turno son: reservado, cancelado y atendido.
-    const estadosValidos = [
-      'reservado',
-      'cancelado',
-      'atendido'
-    ];
-
-    // Validar estado
-    if (!estadosValidos.includes(estado)) {
-      return res.status(400).json({
-        error: 'Estado no válido. Use: reservado, cancelado o atendido'
+    if (!idMongoValido(id)) {
+      return res.status(400).render("turnos", {
+        title: "Gestión de Turnos",
+        error: "El ID del turno no es válido"
       });
     }
 
-    const turnoId = Number(id);
-
-    if (!Number.isInteger(turnoId)) {
-      return res.status(400).json({
-        error: 'El ID del turno debe ser un número'
-      });
-    }
-
-    const turnos = leerTurnos();
-
-    const turno = turnos.find(t =>
-      Number(t.id) === turnoId
-    );
-
-    // Verificar que exista
+    const turno = await turnosService.getTurnoById(id, true);
     if (!turno) {
-      return res.status(404).json({
-        error: 'Turno no encontrado'
+      return res.status(404).render("turnos", {
+        title: "Gestión de Turnos",
+        error: "Turno no encontrado"
       });
     }
 
-    // Si se intenta volver a reservar un turno, verificar que no exista otro turno ocupado para el mismo profesional.
-    if (estado === 'reservado') {
-
-      const profesionalOcupado = turnos.some(t =>
-        Number(t.id) !== turnoId &&
-        Number(t.profesionalId) === Number(turno.profesionalId) &&
-        t.fecha === turno.fecha &&
-        t.hora === turno.hora &&
-        t.estado === 'reservado'
-      );
-
-      if (profesionalOcupado) {
-        return res.status(409).json({
-          error: 'El profesional ya tiene otro turno reservado en ese horario'
-        });
-      }
-
-      // Verificar también que el cliente no tenga otro turno en ese horario.
-      const clienteDuplicado = turnos.some(t =>
-        Number(t.id) !== turnoId &&
-        Number(t.clienteId) === Number(turno.clienteId) &&
-        t.fecha === turno.fecha &&
-        t.hora === turno.hora &&
-        t.estado === 'reservado'
-      );
-
-      if (clienteDuplicado) {
-        return res.status(409).json({
-          error: 'El cliente ya tiene otro turno reservado en ese horario'
-        });
-      }
-    }
-
-    // Cambiar estado
-    turno.estado = estado;
-
-    guardarTurnos(turnos);
-
-    res.status(200).json({
-      mensaje: `El turno cambió a estado: ${estado}`,
+    return res.render("turno-detalle", {
+      title: `Detalle de Turno - ${turno._id}`,
       turno
     });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).render("turnos", {
+      title: "Gestión de Turnos",
+      error: "Error interno al cargar el detalle del turno"
+    });
+  }
+};
 
+// Vistas Pug: POST /vista/turnos (Procesa el alta desde el formulario web)
+export const crearTurnoDesdeVista = async (req, res) => {
+  try {
+    const { profesionalId, clienteId, fecha, hora } = req.body || {};
+
+    if (!profesionalId || !clienteId || !fecha || !hora) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("Todos los campos son obligatorios")}`);
+    }
+    if (!idMongoValido(profesionalId) || !idMongoValido(clienteId)) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("profesionalId y clienteId deben ser ObjectId válidos")}`);
+    }
+    if (!fechaValida(fecha)) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("La fecha debe ser válida y tener el formato YYYY-MM-DD")}`);
+    }
+    if (typeof hora !== "string" || !horaValida.test(hora)) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("La hora debe tener el formato HH:MM")}`);
+    }
+
+    if (!await profesionalesService.getById(profesionalId)) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("El profesional indicado no existe")}`);
+    }
+    if (!await clientesService.getById(clienteId)) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("El cliente indicado no existe")}`);
+    }
+
+    const [anio, mes, diaNum] = fecha.split("-").map(Number);
+    const dia = diasSemana[new Date(Date.UTC(anio, mes - 1, diaNum)).getUTCDay()];
+    const disponibilidades = await disponibilidadService.getByProfesional(profesionalId);
+
+    let tieneDisponibilidad = false;
+    if (disponibilidades && disponibilidades.length > 0) {
+      tieneDisponibilidad = disponibilidades.some((franja) =>
+        franja.activo !== false
+        && franja.dia.toLowerCase() === dia
+        && franja.horaInicio <= hora
+        && hora <= franja.horaFin
+      );
+    } else {
+      // Si el profesional no tiene franjas específicas configuradas, se admite horario laboral estándar
+      const esLaborable = dia !== "domingo";
+      const horarioValido = dia === "sabado"
+        ? (hora >= "08:00" && hora <= "14:00")
+        : (hora >= "08:00" && hora <= "20:00");
+      tieneDisponibilidad = esLaborable && horarioValido;
+    }
+
+    if (!tieneDisponibilidad) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("El profesional no tiene disponibilidad en ese horario")}`);
+    }
+
+    if (await turnosService.getReservedByProfessional(profesionalId, fecha, hora)) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("El profesional ya tiene un turno reservado en ese horario")}`);
+    }
+    if (await turnosService.getReservedByClient(clienteId, fecha, hora)) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("El cliente ya tiene un turno reservado a esa hora")}`);
+    }
+
+    await turnosService.createTurno({
+      profesionalId,
+      clienteId,
+      fecha,
+      hora,
+      estado: "reservado"
+    });
+
+    return res.redirect(`/vista/turnos?success=${encodeURIComponent("Turno reservado exitosamente")}`);
   } catch (error) {
     console.error(error);
+    const msg = conflictoDuplicado(error)
+      ? "El turno se superpone con una reserva existente"
+      : "Error interno al reservar el turno";
+    return res.redirect(`/vista/turnos?error=${encodeURIComponent(msg)}`);
+  }
+};
 
-    res.status(500).json({
-      error: 'Error al actualizar el estado del turno'
-    });
+// Vistas Pug: POST /vista/turnos/:id/eliminar
+export const eliminarTurnoDesdeVista = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!idMongoValido(id)) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("ID no válido")}`);
+    }
+    const eliminado = await turnosService.deleteTurno(id);
+    if (!eliminado) {
+      return res.redirect(`/vista/turnos?error=${encodeURIComponent("Turno no encontrado")}`);
+    }
+    return res.redirect(`/vista/turnos?success=${encodeURIComponent("Turno eliminado exitosamente")}`);
+  } catch (err) {
+    console.error(err);
+    return res.redirect(`/vista/turnos?error=${encodeURIComponent("Error al eliminar el turno")}`);
   }
 };

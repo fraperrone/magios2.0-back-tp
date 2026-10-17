@@ -1,0 +1,58 @@
+extends layout
+
+block content
+  .card(style="max-width: 700px; margin: 0 auto;")
+    h2 Detalle del Turno
+    
+    div(style="margin-bottom: 20px;")
+      p
+        strong ID del Turno: 
+        code= turno._id
+      p
+        strong Fecha: 
+        = turno.fecha
+      p
+        strong Hora: 
+        = turno.hora
+      p
+        strong Estado actual: 
+        span(class="badge badge-" + turno.estado)= turno.estado
+
+    div(style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;")
+      h3(style="margin-top: 0; font-size: 1.05rem; color: #1e293b;") Información del Profesional
+      if turno.profesionalId && turno.profesionalId.nombre
+        p
+          strong Nombre: 
+          = `${turno.profesionalId.nombre} ${turno.profesionalId.apellido || ''}`
+        p
+          strong Especialidad: 
+          = turno.profesionalId.especialidad || 'N/A'
+        p
+          strong Email: 
+          = turno.profesionalId.email || 'N/A'
+        p
+          strong Matrícula: 
+          = turno.profesionalId.matricula || 'N/A'
+      else
+        p ID Profesional: #{turno.profesionalId}
+
+    div(style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;")
+      h3(style="margin-top: 0; font-size: 1.05rem; color: #1e293b;") Información del Cliente
+      if turno.clienteId && turno.clienteId.nombre
+        p
+          strong Nombre: 
+          = turno.clienteId.nombre
+        p
+          strong Email: 
+          = turno.clienteId.email || 'N/A'
+        p
+          strong Teléfono: 
+          = turno.clienteId.telefono || 'N/A'
+      else
+        p ID Cliente: #{turno.clienteId}
+
+    div(style="display: flex; gap: 12px; margin-top: 24px;")
+      a(href="/vista/turnos" class="btn btn-secondary") ← Volver al listado
+      if turno.estado === 'reservado'
+        a(href="/vista/cancelaciones" class="btn btn-danger") Cancelar este Turno
+

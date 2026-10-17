@@ -1,0 +1,37 @@
+extends layout
+
+block content
+  h1 Disponibilidades
+
+  h2 Nueva franja
+  form(action="/disponibilidades/api/" method="POST")
+    label(for="profesionalId") Profesional ID:
+    input(type="text" name="profesionalId" id="profesionalId" required)
+    br
+    label(for="dia") Día:
+    select(name="dia" id="dia" required)
+      option(value="lunes") lunes
+      option(value="martes") martes
+      option(value="miercoles") miercoles
+      option(value="jueves") jueves
+      option(value="viernes") viernes
+      option(value="sabado") sabado
+      option(value="domingo") domingo
+    br
+    label(for="horaInicio") Hora inicio:
+    input(type="text" name="horaInicio" id="horaInicio" placeholder="08:00" required)
+    br
+    label(for="horaFin") Hora fin:
+    input(type="text" name="horaFin" id="horaFin" placeholder="12:00" required)
+    br
+    button(type="submit") Guardar
+
+  h2 Lista de disponibilidades
+  if disponibilidades.length
+    ul
+      each d in disponibilidades
+        li
+          a(href="/disponibilidades/vista/" + d._id) d._id
+          p= d.dia
+  else
+    p No hay disponibilidades cargadas.

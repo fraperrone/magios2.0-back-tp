@@ -1,169 +1,167 @@
-const DisponibilidadService = require('../services/disponibilidad.service');
+import mongoose from "mongoose";
+import DisponibilidadService from "../services/disponibilidad.service.js";
 
 const disponibilidadService = new DisponibilidadService();
+
+const DIAS_VALIDOS = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+const esObjectIdValido = (id) => mongoose.isValidObjectId(id);
+
+const responderError = (res, error) => {
+  if (error && error.status) {
+    return res.status(error.status).json({ error: error.message });
+  }
+  if (error && error.code === 11000) {
+    return res.status(400).json({ error: "Ya existe esa disponibilidad para el profesional en ese día y horario" });
+  }
+  return res.status(500).json({ error: error.message });
+};
 
 class DisponibilidadController {
 
   // Obtener todas las disponibilidades
-  getAll(req, res) {
+  async getAll(req, res) {
     try {
-      const disponibilidades = disponibilidadService.getAll();
-      res.status(200).json(disponibilidades);
+      res.status(200).json(await disponibilidadService.getAll());
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      responderError(res, error);
     }
   }
 
   // Obtener disponibilidad por ID
-  getById(req, res) {
+  async getById(req, res) {
+    if (!esObjectIdValido(req.params.id)) {
+      return res.status(400).json({ error: "ID no válido" });
+    }
     try {
-      const { id } = req.params;
-      const disponibilidad = disponibilidadService.getById(id);
-
+      const disponibilidad = await disponibilidadService.getById(req.params.id);
       if (!disponibilidad) {
-        return res.status(404).json({ error: 'Disponibilidad no encontrada' });
+        return res.status(404).json({ error: "Disponibilidad no encontrada" });
       }
-
       res.status(200).json(disponibilidad);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      responderError(res, error);
     }
   }
 
   // Obtener disponibilidades por profesional
-  getByProfesional(req, res) {
+  async getByProfesional(req, res) {
+    if (!esObjectIdValido(req.params.profesionalId)) {
+      return res.status(400).json({ error: "profesionalId no válido" });
+    }
     try {
-      const { profesionalId } = req.params;
-      const disponibilidades = disponibilidadService.getByProfesional(profesionalId);
-      res.status(200).json(disponibilidades);
+      res.status(200).json(await disponibilidadService.getByProfesional(req.params.profesionalId));
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      responderError(res, error);
     }
   }
 
   // Obtener disponibilidades por día
-  getByDia(req, res) {
+  async getByDia(req, res) {
+    const { dia } = req.params;
+    if (!dia || !DIAS_VALIDOS.includes(String(dia).toLowerCase())) {
+      return res.status(400).json({ error: "Día inválido. Use: lunes, martes, miercoles, jueves, viernes, sabado, domingo" });
+    }
     try {
-      const { dia } = req.params;
-      const disponibilidades = disponibilidadService.getByDia(dia);
-      res.status(200).json(disponibilidades);
+      res.status(200).json(await disponibilidadService.getByDia(dia));
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      responderError(res, error);
     }
   }
 
   // Crear nueva disponibilidad
-  create(req, res) {
+  async create(req, res) {
     try {
       const { profesionalId, dia, horaInicio, horaFin } = req.body;
 
-      // Validaciones básicas
       if (!profesionalId || !dia || !horaInicio || !horaFin) {
-        return res.status(400).json({ 
-          error: 'Todos los campos son requeridos: profesionalId, dia, horaInicio, horaFin' 
+        return res.status(400).json({
+          error: "Todos los campos son requeridos: profesionalId, dia, horaInicio, horaFin"
         });
       }
-
-      // Validar formato de hora (HH:MM)
-      const horaRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-      if (!horaRegex.test(horaInicio) || !horaRegex.test(horaFin)) {
-        return res.status(400).json({ 
-          error: 'Formato de hora inválido. Use HH:MM (ej: 09:00)' 
-        });
+      if (!esObjectIdValido(profesionalId)) {
+        return res.status(400).json({ error: "profesionalId no válido" });
+      }
+      if (!DIAS_VALIDOS.includes(String(dia).toLowerCase())) {
+        return res.status(400).json({ error: "Día inválido. Use: lunes, martes, miercoles, jueves, viernes, sabado, domingo" });
       }
 
-      // Validar que horaInicio sea menor que horaFin
-      if (horaInicio >= horaFin) {
-        return res.status(400).json({ 
-          error: 'La hora de inicio debe ser menor que la hora de fin' 
-        });
-      }
-
-      // Validar día válido
-      const diasValidos = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-      if (!diasValidos.includes(dia.toLowerCase())) {
-        return res.status(400).json({ 
-          error: 'Día inválido. Use: lunes, martes, miércoles, jueves, viernes, sábado, domingo' 
-        });
-      }
-
-      const nuevaDisponibilidad = disponibilidadService.create({
+      const nuevaDisponibilidad = await disponibilidadService.create({
         profesionalId,
-        dia: dia.toLowerCase(),
+        dia,
         horaInicio,
         horaFin
       });
 
       res.status(201).json(nuevaDisponibilidad);
     } catch (error) {
-      if (error.message.includes('Ya existe')) {
-        return res.status(409).json({ error: error.message });
-      }
-      res.status(500).json({ error: error.message });
+      responderError(res, error);
     }
   }
 
   // Actualizar disponibilidad
-  update(req, res) {
+  async update(req, res) {
+    if (!esObjectIdValido(req.params.id)) {
+      return res.status(400).json({ error: "ID no válido" });
+    }
     try {
       const { id } = req.params;
       const { profesionalId, dia, horaInicio, horaFin, activo } = req.body;
 
-      const disponibilidadExistente = disponibilidadService.getById(id);
-      if (!disponibilidadExistente) {
-        return res.status(404).json({ error: 'Disponibilidad no encontrada' });
+      if (profesionalId !== undefined && !esObjectIdValido(profesionalId)) {
+        return res.status(400).json({ error: "profesionalId no válido" });
       }
-
-      // Validar formato de hora si se proporcionan
-      const horaRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-      if (horaInicio && !horaRegex.test(horaInicio)) {
-        return res.status(400).json({ error: 'Formato de hora inválido para horaInicio' });
-      }
-      if (horaFin && !horaRegex.test(horaFin)) {
-        return res.status(400).json({ error: 'Formato de hora inválido para horaFin' });
-      }
-
-      // Validar que horaInicio < horaFin si ambos se proporcionan
-      if (horaInicio && horaFin && horaInicio >= horaFin) {
-        return res.status(400).json({ 
-          error: 'La hora de inicio debe ser menor que la hora de fin' 
-        });
+      if (dia !== undefined && !DIAS_VALIDOS.includes(String(dia).toLowerCase())) {
+        return res.status(400).json({ error: "Día inválido. Use: lunes, martes, miercoles, jueves, viernes, sabado, domingo" });
       }
 
       const updateData = {};
       if (profesionalId !== undefined) updateData.profesionalId = profesionalId;
-      if (dia !== undefined) updateData.dia = dia.toLowerCase();
+      if (dia !== undefined) updateData.dia = dia;
       if (horaInicio !== undefined) updateData.horaInicio = horaInicio;
       if (horaFin !== undefined) updateData.horaFin = horaFin;
       if (activo !== undefined) updateData.activo = activo;
 
-      const disponibilidadActualizada = disponibilidadService.update(id, updateData);
+      const disponibilidadActualizada = await disponibilidadService.update(id, updateData);
+      if (!disponibilidadActualizada) {
+        return res.status(404).json({ error: "Disponibilidad no encontrada" });
+      }
 
       res.status(200).json(disponibilidadActualizada);
     } catch (error) {
-      if (error.message.includes('no encontrada')) {
-        return res.status(404).json({ error: error.message });
-      }
-      res.status(500).json({ error: error.message });
+      responderError(res, error);
     }
   }
 
   // Eliminar disponibilidad
-  delete(req, res) {
+  async delete(req, res) {
+    if (!esObjectIdValido(req.params.id)) {
+      return res.status(400).json({ error: "ID no válido" });
+    }
     try {
-      const { id } = req.params;
-      const disponibilidad = disponibilidadService.delete(id);
-      res.status(200).json({ 
-        message: 'Disponibilidad eliminada correctamente',
-        disponibilidad 
+      const eliminada = await disponibilidadService.delete(req.params.id);
+      if (!eliminada) {
+        return res.status(404).json({ error: "Disponibilidad no encontrada" });
+      }
+      res.status(200).json({
+        message: "Disponibilidad eliminada correctamente",
+        disponibilidad: eliminada
       });
     } catch (error) {
-      if (error.message.includes('no encontrada')) {
-        return res.status(404).json({ error: error.message });
-      }
-      res.status(500).json({ error: error.message });
+      responderError(res, error);
     }
+  }
+
+  
+  // Vistas
+  async renderDisponibilidades(req, res) {
+    const disponibilidades = await disponibilidadService.getAll();
+    res.render("disponibilidades", { disponibilidades });
+  }
+
+  async renderDisponibilidadById(req, res) {
+    const disponibilidad = await disponibilidadService.getById(req.params.id);
+    res.render("disponibilidad-detalle", { disponibilidad });
   }
 }
 
-module.exports = DisponibilidadController;
+export default DisponibilidadController;

@@ -1,115 +1,130 @@
-const fs = require('fs');
-const path = require('path');
+import Disponibilidad from "../models/DisponibilidadHoraria.model.js";
+import Profesional from "../models/Profesional.model.js";
 
-const DATA_PATH = path.join(__dirname, '../data/disponibilidad_horaria.json');
+const HORA_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+const normalizarDia = (dia) => String(dia).trim().toLowerCase();
+
+const error = (status, message) => {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+};
 
 class DisponibilidadService {
-  constructor() {
-    this.ensureFileExists();
-  }
-
-  ensureFileExists() {
-    if (!fs.existsSync(DATA_PATH)) {
-      fs.writeFileSync(DATA_PATH, JSON.stringify([], null, 2));
-    }
-  }
-
-  readData() {
-    const data = fs.readFileSync(DATA_PATH, 'utf8');
-    return JSON.parse(data);
-  }
-
-  writeData(data) {
-    fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-  }
-
   // Obtener todas las disponibilidades
-  getAll() {
-    return this.readData();
+  async getAll() {
+    return await Disponibilidad.find().sort({ profesionalId: 1, dia: 1, horaInicio: 1 });
   }
 
   // Obtener disponibilidad por ID
-  getById(id) {
-    const disponibilidades = this.readData();
-    return disponibilidades.find(d => String(d.id) === String(id));
+  async getById(id) {
+    try {
+      return await Disponibilidad.findById(id);
+    } catch (e) {
+      return null;
+    }
   }
 
   // Obtener disponibilidades por profesional
-  getByProfesional(profesionalId) {
-    const disponibilidades = this.readData();
-    return disponibilidades.filter(d => String(d.profesionalId) === String(profesionalId));
+  async getByProfesional(profesionalId) {
+    return await Disponibilidad.find({ profesionalId }).sort({ dia: 1, horaInicio: 1 });
   }
 
   // Obtener disponibilidades por día
-  getByDia(dia) {
-    const disponibilidades = this.readData();
-    return disponibilidades.filter(d => d.dia.toLowerCase() === String(dia).toLowerCase());
+  async getByDia(dia) {
+    return await Disponibilidad.find({ dia: normalizarDia(dia) }).sort({ horaInicio: 1 });
   }
 
   // Crear nueva disponibilidad
-  create(disponibilidadData) {
-    const disponibilidades = this.readData();
-    
-    // Validar que no exista duplicado (mismo profesional, día y horario)
-    const existe = disponibilidades.some(d => 
-      d.profesionalId === disponibilidadData.profesionalId &&
-      d.dia === disponibilidadData.dia &&
-      d.horaInicio === disponibilidadData.horaInicio &&
-      d.horaFin === disponibilidadData.horaFin
-    );
+  async create(disponibilidadData) {
+    const { profesionalId, dia, horaInicio, horaFin } = disponibilidadData;
 
-    if (existe) {
-      throw new Error('Ya existe esta disponibilidad para el profesional en ese día y horario');
+    const profesional = await Profesional.findById(profesionalId).catch(() => null);
+    if (!profesional) {
+      throw error(404, "El profesional indicado no existe");
     }
 
-    const nuevaDisponibilidad = {
-      id: Date.now().toString(),
-      profesionalId: disponibilidadData.profesionalId,
-      dia: disponibilidadData.dia,
-      horaInicio: disponibilidadData.horaInicio,
-      horaFin: disponibilidadData.horaFin,
-      activo: true,
-      createdAt: new Date().toISOString()
-    };
+    const diaNormalizado = normalizarDia(dia);
 
-    disponibilidades.push(nuevaDisponibilidad);
-    this.writeData(disponibilidades);
-    return nuevaDisponibilidad;
+    if (!HORA_REGEX.test(horaInicio) || !HORA_REGEX.test(horaFin)) {
+      throw error(400, "horaInicio y horaFin deben tener formato HH:MM");
+    }
+    if (!(horaInicio < horaFin)) {
+      throw error(400, "horaInicio debe ser menor que horaFin");
+    }
+
+    const solapada = await Disponibilidad.findOne({
+      profesionalId,
+      dia: diaNormalizado,
+      horaInicio: { $lt: horaFin },
+      horaFin: { $gt: horaInicio }
+    });
+    if (solapada) {
+      throw error(400, "La franja se solapa con otra disponibilidad del profesional en ese día");
+    }
+
+    try {
+      const nueva = new Disponibilidad({
+        profesionalId,
+        dia: diaNormalizado,
+        horaInicio,
+        horaFin,
+        activo: disponibilidadData.activo !== undefined ? disponibilidadData.activo : true
+      });
+      return await nueva.save();
+    } catch (e) {
+      if (e.code === 11000) {
+        throw error(400, "Ya existe esa disponibilidad para el profesional en ese día y horario");
+      }
+      throw e;
+    }
   }
 
   // Actualizar disponibilidad
-  update(id, updateData) {
-    const disponibilidades = this.readData();
-    const index = disponibilidades.findIndex(d => String(d.id) === String(id));
-
-    if (index === -1) {
-      throw new Error('Disponibilidad no encontrada');
+  async update(id, updateData) {
+    const actual = await this.getById(id);
+    if (!actual) {
+      throw error(404, "Disponibilidad no encontrada");
     }
 
-    const disponibilidadActualizada = {
-      ...disponibilidades[index],
-      ...updateData,
-      updatedAt: new Date().toISOString()
-    };
+    const dia = updateData.dia !== undefined ? normalizarDia(updateData.dia) : actual.dia;
+    const horaInicio = updateData.horaInicio !== undefined ? updateData.horaInicio : actual.horaInicio;
+    const horaFin = updateData.horaFin !== undefined ? updateData.horaFin : actual.horaFin;
 
-    disponibilidades[index] = disponibilidadActualizada;
-    this.writeData(disponibilidades);
-    return disponibilidadActualizada;
+    if (!HORA_REGEX.test(horaInicio) || !HORA_REGEX.test(horaFin)) {
+      throw error(400, "horaInicio y horaFin deben tener formato HH:MM");
+    }
+    if (!(horaInicio < horaFin)) {
+      throw error(400, "horaInicio debe ser menor que horaFin");
+    }
+
+    const solapada = await Disponibilidad.findOne({
+      _id: { $ne: actual._id },
+      profesionalId: actual.profesionalId,
+      dia,
+      horaInicio: { $lt: horaFin },
+      horaFin: { $gt: horaInicio }
+    });
+    if (solapada) {
+      throw error(400, "La franja se solapa con otra disponibilidad del profesional en ese día");
+    }
+
+    return await Disponibilidad.findByIdAndUpdate(
+      id,
+      { ...updateData, dia },
+      { new: true, runValidators: true }
+    );
   }
 
   // Eliminar disponibilidad
-  delete(id) {
-    let disponibilidades = this.readData();
-    const index = disponibilidades.findIndex(d => String(d.id) === String(id));
-
-    if (index === -1) {
-      throw new Error('Disponibilidad no encontrada');
+  async delete(id) {
+    try {
+      return await Disponibilidad.findByIdAndDelete(id);
+    } catch (e) {
+      return null;
     }
-
-    const [deleted] = disponibilidades.splice(index, 1);
-    this.writeData(disponibilidades);
-    return deleted;
   }
 }
 
-module.exports = DisponibilidadService;
+export default DisponibilidadService;

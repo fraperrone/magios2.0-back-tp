@@ -1,0 +1,10 @@
+extends layout
+
+block content
+    h1 Clientes
+    ul
+      each cliente in clientes
+        li
+          a(href="/clientes/vista/" + cliente._id) cliente._id
+          h2= cliente.nombre
+          p= cliente.email
