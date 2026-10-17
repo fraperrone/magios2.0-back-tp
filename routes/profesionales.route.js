@@ -3,15 +3,17 @@ import * as profesionalesController from "../controllers/profesionales.controlle
 
 const router = express.Router();
 
-// API JSON
-router.get('/api/', profesionalesController.getProfesionales);
-router.get('/api/:id', profesionalesController.getProfesionalById);
-router.post('/api/', profesionalesController.createProfesional);
-router.put('/api/:id', profesionalesController.updateProfesional);
-router.delete('/api/:id', profesionalesController.deleteProfesional);
+// 1. Vistas (Definidas primero para que :id no capture "vista")
+router.get("/vista", profesionalesController.renderProfesionales);
+router.get("/vista/:id", profesionalesController.renderProfesionalById);
 
-// Vistas (solo muestra + formularios)
-router.get('/vista', profesionalesController.renderProfesionales);
-router.get('/vista/:id', profesionalesController.renderProfesionalById);
+// 2. Rutas de colección (raíz)
+router.get(["/", "/api"], profesionalesController.getProfesionales);
+router.post(["/", "/api"], profesionalesController.createProfesional);
+
+// 3. Rutas parametrizadas por :id (al final para evitar colisiones)
+router.get(["/:id", "/api/:id"], profesionalesController.getProfesionalById);
+router.put(["/:id", "/api/:id"], profesionalesController.updateProfesional);
+router.delete(["/:id", "/api/:id"], profesionalesController.deleteProfesional);
 
 export default router;

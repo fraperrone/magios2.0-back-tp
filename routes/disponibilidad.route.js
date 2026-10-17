@@ -4,17 +4,19 @@ import DisponibilidadController from "../controllers/disponibilidad.controller.j
 const router = express.Router();
 const disponibilidadController = new DisponibilidadController();
 
-// API JSON (rutas específicas primero)
-router.get('/api/', disponibilidadController.getAll);
-router.get('/api/profesional/:profesionalId', disponibilidadController.getByProfesional);
-router.get('/api/dia/:dia', disponibilidadController.getByDia);
-router.get('/api/:id', disponibilidadController.getById);
-router.post('/api/', disponibilidadController.create);
-router.put('/api/:id', disponibilidadController.update);
-router.delete('/api/:id', disponibilidadController.delete);
+// 1. Vistas (Definidas primero para que :id no capture "vista")
+router.get("/vista", disponibilidadController.renderDisponibilidades);
+router.get("/vista/:id", disponibilidadController.renderDisponibilidadById);
 
-// Vistas (solo muestra + formularios)
-router.get('/vista', disponibilidadController.renderDisponibilidades);
-router.get('/vista/:id', disponibilidadController.renderDisponibilidadById);
+// 2. Rutas literales y específicas de API (antes de :id)
+router.get(["/", "/api"], disponibilidadController.getAll);
+router.post(["/", "/api"], disponibilidadController.create);
+router.get(["/profesional/:profesionalId", "/api/profesional/:profesionalId"], disponibilidadController.getByProfesional);
+router.get(["/dia/:dia", "/api/dia/:dia"], disponibilidadController.getByDia);
+
+// 3. Rutas parametrizadas por :id (al final para evitar colisiones)
+router.get(["/:id", "/api/:id"], disponibilidadController.getById);
+router.put(["/:id", "/api/:id"], disponibilidadController.update);
+router.delete(["/:id", "/api/:id"], disponibilidadController.delete);
 
 export default router;

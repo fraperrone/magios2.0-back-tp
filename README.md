@@ -177,6 +177,7 @@ Representa a una persona que solicita turnos. Sus datos incluyen nombre, correo 
 ### Turno
 
 Representa una reserva asociada a un profesional y un cliente. Contiene fecha, hora y estado.
+El esquema Mongoose usa referencias a `Profesional` y `Cliente`, valida los formatos de fecha y hora y restringe los estados permitidos. Los índices impiden reservas activas duplicadas por profesional o cliente.
 
 Los estados permitidos son:
 
@@ -235,24 +236,29 @@ Ejemplo de solicitud POST:
 
 ### Turnos
 
+Para ver los pasos detallados de configuración y cada caso de prueba en Postman, consulta el [Instructivo de pruebas de turnos](./POSTMAN-TURNOS.md).
+
 | Método | Endpoint | Descripción |
 |---|---|---|
 | GET | `/turnos` | Consultar turnos |
 | POST | `/turnos` | Registrar reserva |
 | PATCH | `/turnos/:id/estado` | Modificar estado |
+| PUT | `/turnos/:id` | Modificar estado (ruta compatible) |
+| GET | `/cancelaciones` | Consultar cancelaciones |
+| POST | `/cancelaciones` | Cancelar un turno registrando el motivo y la fecha/hora de cancelación |
 
 Ejemplo de solicitud POST:
 
 ```json
 {
-  "profesionalId": 2,
-  "clienteId": 1,
+  "profesionalId": "507f1f77bcf86cd799439011",
+  "clienteId": "507f1f77bcf86cd799439012",
   "fecha": "2026-10-15",
   "hora": "14:00"
 }
 ```
 
-**Importante:** los identificadores numéricos pertenecen al ejemplo de la primera entrega. Si se utilizan ObjectId de MongoDB, deben reemplazarse por identificadores reales.
+`profesionalId` y `clienteId` deben ser ObjectId existentes en MongoDB. Los identificadores numéricos de `data/turnos.json` pertenecen a la primera entrega y no se importan automáticamente.
 
 Ejemplo de cancelación:
 
@@ -264,15 +270,28 @@ Ejemplo de cancelación:
 }
 ```
 
+Para registrar también los datos de la cancelación, `POST /cancelaciones` recibe:
+
+```json
+{
+  "id_turno": "507f1f77bcf86cd799439013",
+  "motivo": "El paciente no puede asistir",
+  "fecha_cancelacion": "2026-10-14",
+  "hora_cancelacion": "10:30"
+}
+```
+
+Los registros de cancelación se persisten en MongoDB mediante el modelo Mongoose `Cancelacion`, relacionado con `Turno` por `id_turno`. Cada turno puede tener un único registro de cancelación; los motivos se guardan saneados y deben tener entre 5 y 300 caracteres. El archivo `data/cancelaciones.json` queda como dato legado y ya no es utilizado por la API.
+
 ### Filtros de consulta
 
 El endpoint `GET /turnos` permite filtrar por:
 
-- Profesional: `/turnos?profesionalId=2`
-- Cliente y estado: `/turnos?clienteId=1&estado=reservado`
+- Profesional: `/turnos?profesionalId=507f1f77bcf86cd799439011`
+- Cliente y estado: `/turnos?clienteId=507f1f77bcf86cd799439012&estado=reservado`
 - Fecha: `/turnos?fecha=2026-10-15`
 
-Los ejemplos deben actualizarse si cambia el formato de los identificadores.
+Los datos de turnos nuevos se guardan en MongoDB mediante el esquema Mongoose.
 
 ## Reglas de negocio
 
@@ -354,4 +373,3 @@ Documentación oficial de las tecnologías utilizadas:
 ## Repositorio
 
 https://github.com/fraperrone/magios2.0-back-tp
-

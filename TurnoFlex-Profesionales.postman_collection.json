@@ -1,0 +1,190 @@
+{
+  "info": {
+    "_postman_id": "56d8c778-92c8-4c5f-8dd0-536816918c6e",
+    "name": "TurnoFlex API - Profesionales",
+    "description": "Peticiones CRUD para profesionales. Ejecutar en orden para reutilizar el profesionalId creado.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Profesionales",
+      "item": [
+        {
+          "name": "Listar profesionales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/profesionales/api/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La respuesta es una lista', function () {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear profesional",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('testSuffix', Date.now().toString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    const profesional = pm.response.json();",
+                  "    const id = profesional._id || profesional.id;",
+                  "    pm.test('La respuesta contiene el ID del profesional', function () {",
+                  "        pm.expect(id).to.be.ok;",
+                  "    });",
+                  "    if (id) pm.collectionVariables.set('profesionalId', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gomez\",\n  \"email\": \"profesional.{{testSuffix}}@example.com\",\n  \"telefono\": \"1122334455\",\n  \"especialidad\": \"Clinica\",\n  \"matricula\": \"MP-{{testSuffix}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/profesionales/api/"
+          }
+        },
+        {
+          "name": "Buscar profesional por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/profesionales/api/{{profesionalId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('El profesional devuelto coincide con el ID solicitado', function () {",
+                  "    const profesional = pm.response.json();",
+                  "    pm.expect(profesional._id || profesional.id).to.eql(pm.collectionVariables.get('profesionalId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar profesional",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gomez\",\n  \"email\": \"profesional.actualizado.{{testSuffix}}@example.com\",\n  \"telefono\": \"1122334455\",\n  \"especialidad\": \"Pediatria\",\n  \"matricula\": \"MP-ACT-{{testSuffix}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/profesionales/api/{{profesionalId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La especialidad fue actualizada', function () {",
+                  "    pm.expect(pm.response.json().especialidad).to.eql('Pediatria');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar profesional",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/profesionales/api/{{profesionalId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (pm.response.code === 200) pm.collectionVariables.unset('profesionalId');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "profesionalId",
+      "value": ""
+    },
+    {
+      "key": "testSuffix",
+      "value": ""
+    }
+  ]
+}

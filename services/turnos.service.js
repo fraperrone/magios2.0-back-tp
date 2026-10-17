@@ -1,50 +1,45 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import mongoose from "mongoose";
+import Turno from "../models/Turno.model.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const turnosFilePath = path.join(__dirname, '../data/turnos.json');
+export const getAllTurnos = (filters = {}, populate = false) => {
+  const query = Turno.find(filters).sort({ fecha: 1, hora: 1 });
+  if (populate) {
+    query.populate("profesionalId").populate("clienteId");
+  }
+  return query;
+};
 
-function getTurnos() {
-  const turnosData = fs.readFileSync(turnosFilePath, 'utf-8')
-  return JSON.parse(turnosData)
-}
+export const getTurnoById = async (id, populate = false) => {
+  if (!mongoose.isObjectIdOrHexString(id)) return null;
+  const query = Turno.findById(id);
+  if (populate) {
+    query.populate("profesionalId").populate("clienteId");
+  }
+  return query;
+};
 
-function saveTurnos(turnos) {
-  fs.writeFileSync(
-    turnosFilePath,
-    JSON.stringify(turnos, null, 2),
-  )
-}
+export const getReservedByProfessional = (profesionalId, fecha, hora, excludeId) => {
+  const filters = { profesionalId, fecha, hora, estado: "reservado" };
+  if (excludeId) filters._id = { $ne: excludeId };
+  return Turno.findOne(filters);
+};
 
-export const getAllTurnos = () => {
-    return getTurnos()
-}
+export const getReservedByClient = (clienteId, fecha, hora, excludeId) => {
+  const filters = { clienteId, fecha, hora, estado: "reservado" };
+  if (excludeId) filters._id = { $ne: excludeId };
+  return Turno.findOne(filters);
+};
 
-export const getTurnoById = (id) => {
-    const turnos = getTurnos()
-    return turnos.find((t) => t.id === Number(id))
-}
+export const createTurno = (data) => Turno.create(data);
 
-export const updateTurno = (id, data) => {
-    const turnos = getTurnos()
-    const index = turnos.findIndex((t) => t.id === Number(id))
-    if (index === -1) return null
-    turnos[index] = {
-        ...turnos[index],
-        ...data,
-        id_turno: turnos[index].id_turno,
-    }
-    saveTurnos(turnos)
-    return turnos[index]
-}
+export const updateTurno = async (id, data) => {
+  if (!mongoose.isObjectIdOrHexString(id)) return null;
+  return Turno.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+};
 
-export const deleteTurno = (id) => {
-    const turnos = getTurnos()
-    const index = turnos.findIndex((t) => t.id_turno === Number(id))
-    if (index === -1) return false
-    turnos.splice(index, 1)
-    saveTurnos(turnos)
-    return true
-}
+export const cancelTurno = (id) => updateTurno(id, { estado: "cancelado" });
+
+export const deleteTurno = async (id) => {
+  if (!mongoose.isObjectIdOrHexString(id)) return false;
+  return Boolean(await Turno.findByIdAndDelete(id));
+};

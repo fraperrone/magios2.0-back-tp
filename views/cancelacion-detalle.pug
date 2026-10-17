@@ -1,0 +1,52 @@
+extends layout
+
+block content
+  .card(style="max-width: 700px; margin: 0 auto;")
+    h2 Detalle de Cancelación
+    
+    div(style="margin-bottom: 20px;")
+      p
+        strong ID Cancelación: 
+        code= cancelacion._id
+      p
+        strong Fecha de cancelación: 
+        = cancelacion.fecha_cancelacion
+      p
+        strong Hora de cancelación: 
+        = cancelacion.hora_cancelacion
+      p
+        strong Registrado el: 
+        = cancelacion.createdAt ? new Date(cancelacion.createdAt).toLocaleString('es-AR') : 'N/A'
+      p
+        strong Motivo expresado:
+      div(style="background: #fff1f2; border-left: 4px solid #f43f5e; padding: 12px 16px; margin: 8px 0; border-radius: 4px; font-style: italic;")
+        = cancelacion.motivo
+
+    if cancelacion.id_turno
+      div(style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;")
+        h3(style="margin-top: 0; font-size: 1.05rem; color: #1e293b;") Datos del Turno Afectado
+        p
+          strong ID Turno: 
+          code= cancelacion.id_turno._id || cancelacion.id_turno
+        if cancelacion.id_turno.fecha
+          p
+            strong Fecha original: 
+            = cancelacion.id_turno.fecha
+          p
+            strong Hora original: 
+            = cancelacion.id_turno.hora
+          p
+            strong Estado del turno: 
+            span(class="badge badge-" + cancelacion.id_turno.estado)= cancelacion.id_turno.estado
+          if cancelacion.id_turno.profesionalId
+            p
+              strong Profesional: 
+              = `${cancelacion.id_turno.profesionalId.nombre} ${cancelacion.id_turno.profesionalId.apellido || ''}`
+          if cancelacion.id_turno.clienteId
+            p
+              strong Cliente: 
+              = `${cancelacion.id_turno.clienteId.nombre} (${cancelacion.id_turno.clienteId.email || ''})`
+
+    div(style="margin-top: 24px;")
+      a(href="/vista/cancelaciones" class="btn btn-secondary") ← Volver al listado de cancelaciones
+

@@ -5,5 +5,12 @@
     "fecha_cancelacion": "2024-06-15",
     "hora_cancelacion": "10:30",
     "id_cancelacion": 1
+  },
+  {
+    "id_turno": "6ad001bcc14fce39aaf3d274",
+    "motivo": "El cliente no puede asistir",
+    "fecha_cancelacion": "2026-10-14",
+    "hora_cancelacion": "19:35",
+    "id_cancelacion": 2
   }
 ]

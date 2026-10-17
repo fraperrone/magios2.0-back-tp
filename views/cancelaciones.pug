@@ -1,0 +1,71 @@
+extends layout
+
+block content
+  h1(style="margin-bottom: 20px; font-size: 1.6rem;") Gestión de Cancelaciones
+
+  if success
+    .alert.alert-success= success
+  if error
+    .alert.alert-error= error
+
+  .grid
+    // Columna 1: Formulario de Registro de Cancelación
+    .card
+      h2 Registrar Cancelación
+      form(action="/vista/cancelaciones" method="POST")
+        .form-group
+          label(for="id_turno") Turno a cancelar:
+          select(name="id_turno" id="id_turno" required)
+            option(value="") -- Seleccionar turno reservado --
+            if turnosReservados && turnosReservados.length
+              each turno in turnosReservados
+                option(value=turno._id)
+                  = `${turno.fecha} ${turno.hora} - ` + (turno.clienteId ? turno.clienteId.nombre : 'Cliente') + ' con ' + (turno.profesionalId ? turno.profesionalId.nombre : 'Prof.')
+            else
+              option(value="" disabled) No hay turnos reservados activos
+        
+        .form-group
+          label(for="motivo") Motivo de cancelación:
+          textarea(name="motivo" id="motivo" rows="4" placeholder="Indique el motivo (mínimo 5 y máximo 300 caracteres)..." minlength="5" maxlength="300" required)
+        
+        .form-group
+          label(for="fecha_cancelacion") Fecha de cancelación:
+          input(type="date" name="fecha_cancelacion" id="fecha_cancelacion" required)
+        
+        .form-group
+          label(for="hora_cancelacion") Hora de cancelación (HH:MM):
+          input(type="text" name="hora_cancelacion" id="hora_cancelacion" placeholder="Ej: 10:30" pattern="^([01]\\d|2[0-3]):[0-5]\\d$" title="Formato HH:MM (24hs)" required)
+        
+        button(type="submit" class="btn-danger" style="width: 100%; margin-top: 10px;") Confirmar Cancelación
+
+    // Columna 2: Lista de Cancelaciones
+    .card
+      h2 Lista de Cancelaciones
+      
+      if cancelaciones && cancelaciones.length
+        table
+          thead
+            tr
+              th ID Turno
+              th Motivo
+              th Fecha y Hora
+              th Acciones
+          tbody
+            each canc in cancelaciones
+              tr
+                td
+                  if canc.id_turno && canc.id_turno.fecha
+                    div
+                      strong= `${canc.id_turno.fecha} ${canc.id_turno.hora}`
+                    div(style="font-size: 0.8rem; color: #64748b;")
+                      if canc.id_turno.clienteId
+                        = `Cliente: ${canc.id_turno.clienteId.nombre}`
+                  else
+                    code= canc.id_turno ? (canc.id_turno._id || canc.id_turno) : 'N/A'
+                td(style="max-width: 280px; word-break: break-word;")= canc.motivo
+                td= `${canc.fecha_cancelacion} ${canc.hora_cancelacion}`
+                td
+                  a(href="/vista/cancelaciones/" + canc._id class="btn btn-sm btn-secondary") Ver Detalle
+      else
+        p(style="color: #64748b; padding: 20px 0; text-align: center;") No hay registros de cancelaciones disponibles.
+
