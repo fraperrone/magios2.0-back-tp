@@ -11,7 +11,7 @@ const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/turnosdb"
 console.log("MongoDB URI:", mongoUri); // Log the MongoDB URI for debugging
 
 const connectDB = async () => {
-  await mongoose
+   mongoose
     .connect(mongoUri)
     .then(() => {
       console.log("Connected to MongoDB successfully");
