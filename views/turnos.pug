@@ -1,0 +1,112 @@
+extends layout
+
+block content
+  h1(style="margin-bottom: 20px; font-size: 1.6rem;") Gestión de Turnos
+
+  if success
+    .alert.alert-success= success
+  if error
+    .alert.alert-error= error
+
+  .grid
+    // Columna 1: Formulario de Alta de Turno
+    .card
+      h2 Nuevo Turno
+      form(action="/vista/turnos" method="POST")
+        .form-group
+          label(for="profesionalId") Profesional:
+          select(name="profesionalId" id="profesionalId" required)
+            option(value="") -- Seleccionar profesional --
+            each prof in profesionales
+              option(value=prof._id)= `${prof.nombre} ${prof.apellido || ''} (${prof.especialidad || 'General'})`
+        
+        .form-group
+          label(for="clienteId") Cliente:
+          select(name="clienteId" id="clienteId" required)
+            option(value="") -- Seleccionar cliente --
+            each cli in clientes
+              option(value=cli._id)= `${cli.nombre} - ${cli.email}`
+        
+        .form-group
+          label(for="fecha") Fecha:
+          input(type="date" name="fecha" id="fecha" required)
+        
+        .form-group
+          label(for="hora") Hora (HH:MM):
+          input(type="text" name="hora" id="hora" placeholder="Ej: 14:00" pattern="^([01]\\d|2[0-3]):[0-5]\\d$" title="Formato HH:MM (24hs)" required)
+          small(style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;") Horario de atención disponible: Lunes a Viernes de 08:00 a 20:00.
+        
+        button(type="submit" style="width: 100%; margin-top: 10px;") Reservar Turno
+
+    // Columna 2: Filtros y Lista de Turnos
+    .card
+      h2 Lista de Turnos
+      
+      // Formulario de Filtros
+      form(action="/vista/turnos" method="GET" class="filter-bar")
+        .filter-group
+          label(for="filtro-prof") Profesional:
+          select(name="profesionalId" id="filtro-prof")
+            option(value="") Todos
+            each prof in profesionales
+              option(value=prof._id selected=(filtros && filtros.profesionalId == prof._id.toString()))= prof.nombre
+        
+        .filter-group
+          label(for="filtro-cli") Cliente:
+          select(name="clienteId" id="filtro-cli")
+            option(value="") Todos
+            each cli in clientes
+              option(value=cli._id selected=(filtros && filtros.clienteId == cli._id.toString()))= cli.nombre
+        
+        .filter-group
+          label(for="filtro-fecha") Fecha:
+          input(type="date" name="fecha" id="filtro-fecha" value=(filtros ? filtros.fecha : ''))
+        
+        .filter-group
+          label(for="filtro-estado") Estado:
+          select(name="estado" id="filtro-estado")
+            option(value="") Todos
+            option(value="reservado" selected=(filtros && filtros.estado == 'reservado')) Reservado
+            option(value="atendido" selected=(filtros && filtros.estado == 'atendido')) Atendido
+            option(value="cancelado" selected=(filtros && filtros.estado == 'cancelado')) Cancelado
+        
+        div(style="display: flex; gap: 8px;")
+          button(type="submit" class="btn btn-secondary") Filtrar
+          a(href="/vista/turnos" class="btn btn-secondary" style="background: #94a3b8;") Limpiar
+
+      // Tabla de Turnos
+      if turnos && turnos.length
+        table
+          thead
+            tr
+              th Fecha
+              th Hora
+              th Profesional
+              th Cliente
+              th Estado
+              th Acciones
+          tbody
+            each turno in turnos
+              tr
+                td= turno.fecha
+                td= turno.hora
+                td
+                  if turno.profesionalId && turno.profesionalId.nombre
+                    = `${turno.profesionalId.nombre} ${turno.profesionalId.apellido || ''}`
+                  else
+                    span(style="color: #94a3b8;")= turno.profesionalId || 'N/A'
+                td
+                  if turno.clienteId && turno.clienteId.nombre
+                    = turno.clienteId.nombre
+                  else
+                    span(style="color: #94a3b8;")= turno.clienteId || 'N/A'
+                td
+                  span(class="badge badge-" + turno.estado)= turno.estado
+                td
+                  .actions
+                    a(href="/vista/turnos/" + turno._id class="btn btn-sm btn-secondary") Ver
+                    form(action="/vista/turnos/" + turno._id + "/eliminar" method="POST" style="margin: 0;" onsubmit="return confirm('¿Confirma que desea eliminar este turno permanentemente?');")
+                      button(type="submit" class="btn btn-sm btn-danger") Eliminar
+      else
+        p(style="color: #64748b; padding: 20px 0; text-align: center;") No se encontraron turnos con los criterios seleccionados.
+

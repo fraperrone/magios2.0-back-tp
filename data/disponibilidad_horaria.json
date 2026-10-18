@@ -2,7 +2,7 @@
   {
     "id": "1",
     "profesionalId": 2,
-    "dias": ["lunes", "miércoles", "viernes"],
+    "dia": "lunes",
     "horaInicio": "08:00",
     "horaFin": "12:00",
     "activo": true,
@@ -10,8 +10,35 @@
   },
   {
     "id": "2",
+    "profesionalId": 2,
+    "dia": "miercoles",
+    "horaInicio": "08:00",
+    "horaFin": "12:00",
+    "activo": true,
+    "createdAt": "2026-09-06T12:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "profesionalId": 2,
+    "dia": "viernes",
+    "horaInicio": "08:00",
+    "horaFin": "12:00",
+    "activo": true,
+    "createdAt": "2026-09-06T12:00:00.000Z"
+  },
+  {
+    "id": "4",
     "profesionalId": 4,
-    "dias": ["martes", "jueves"],
+    "dia": "martes",
+    "horaInicio": "14:00",
+    "horaFin": "18:00",
+    "activo": true,
+    "createdAt": "2026-09-06T12:00:00.000Z"
+  },
+  {
+    "id": "5",
+    "profesionalId": 4,
+    "dia": "jueves",
     "horaInicio": "14:00",
     "horaFin": "18:00",
     "activo": true,

@@ -1,15 +1,61 @@
 doctype html
-html
+html(lang="es")
   head
-    title= title
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title || "TurnoFlex - Gestión de Turnos"
+    style.
+      * { box-sizing: border-box; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background: #f8fafc; color: #1e293b; line-height: 1.5; }
+      .container { max-width: 1200px; margin: 0 auto; }
+      header { background: #0f172a; color: white; padding: 16px 24px; border-radius: 10px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+      header h1 { margin: 0; font-size: 1.35rem; font-weight: 700; color: #38bdf8; }
+      nav { display: flex; gap: 14px; flex-wrap: wrap; }
+      nav a { color: #cbd5e1; text-decoration: none; font-size: 0.95rem; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: background 0.2s, color 0.2s; }
+      nav a:hover { background: #1e293b; color: white; }
+      .card { background: white; border-radius: 10px; padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 20px; }
+      .card h2 { margin-top: 0; margin-bottom: 16px; font-size: 1.2rem; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+      .grid { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
+      @media(max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+      .form-group { margin-bottom: 14px; }
+      label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #475569; }
+      input, select, textarea { width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; font-family: inherit; background: #fff; }
+      input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+      button, .btn { display: inline-flex; align-items: center; justify-content: center; background: #2563eb; color: white; border: none; padding: 9px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: background 0.2s; }
+      button:hover, .btn:hover { background: #1d4ed8; }
+      .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+      .btn-danger { background: #ef4444; }
+      .btn-danger:hover { background: #dc2626; }
+      .btn-secondary { background: #64748b; }
+      .btn-secondary:hover { background: #475569; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+      th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+      th { background: #f8fafc; color: #475569; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; }
+      tr:hover td { background: #f8fafc; }
+      .badge { display: inline-block; padding: 4px 9px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; }
+      .badge-reservado { background: #dbeafe; color: #1e40af; }
+      .badge-cancelado { background: #fee2e2; color: #991b1b; }
+      .badge-atendido { background: #dcfce7; color: #166534; }
+      .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.92rem; }
+      .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+      .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+      .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 18px; padding: 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+      .filter-group { flex: 1; min-width: 140px; }
+      .filter-group label { margin-bottom: 4px; }
+      .actions { display: flex; gap: 6px; }
+      footer { margin-top: 40px; text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 20px 0; }
   body
-    header
-      h1 Mi Aplicación
-      nav
-        a(href="/") Inicio
-        br
-        a(href="/clientes/vista") Clientes
-    main
-      block content
-    footer
-      p © 2026 Mi App
+    .container
+      header
+        h1 TurnoFlex – Magios 2.0
+        nav
+          a(href="/") Inicio
+          a(href="/vista/turnos") Turnos
+          a(href="/vista/cancelaciones") Cancelaciones
+          a(href="/profesionales/vista") Profesionales
+          a(href="/clientes/vista") Clientes
+          a(href="/disponibilidades/vista") Disponibilidades
+      main
+        block content
+      footer
+        p © 2026 TurnoFlex – Sistema de Gestión de Turnos y Cancelaciones

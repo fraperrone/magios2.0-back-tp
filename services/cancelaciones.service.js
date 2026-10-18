@@ -1,49 +1,49 @@
-const fs = require('fs')
-const path = require('path')
+import mongoose from "mongoose";
+import Cancelacion from "../models/Cancelacion.model.js";
 
-const cancelacionesFilePath = path.join(__dirname, '../data/cancelaciones.json')
-
-function getCancelaciones() {
-  const cancelacionesData = fs.readFileSync(cancelacionesFilePath, 'utf-8')
-  return JSON.parse(cancelacionesData)
-}
-
-function saveCancelaciones(cancelaciones) {
-  fs.writeFileSync(
-    cancelacionesFilePath,
-    JSON.stringify(cancelaciones, null, 2),
-  )
-}
-
-exports.getAllCancelaciones = () => {
-  return getCancelaciones()
-}
-
-exports.getCancelacionById = (id) => {
-  const cancelaciones = getCancelaciones()
-  return cancelaciones.find((c) => c.id_cancelacion === Number(id))
-}
-
-exports.createCancelacion = (data) => {
-  const cancelaciones = getCancelaciones()
-  let nextId =
-    cancelaciones.reduce((max, c) => Math.max(max, c.id_cancelacion), 0) + 1
-  while (cancelaciones.some((c) => c.id_cancelacion === nextId)) nextId++
-  const newCancelacion = { ...data, id_cancelacion: nextId }
-  cancelaciones.push(newCancelacion)
-  saveCancelaciones(cancelaciones)
-  return newCancelacion
-}
-
-exports.updateCancelacion = (id, data) => {
-  const cancelaciones = getCancelaciones()
-  const index = cancelaciones.findIndex((c) => c.id_cancelacion === Number(id))
-  if (index === -1) return null
-  cancelaciones[index] = {
-    ...cancelaciones[index],
-    ...data,
-    id_cancelacion: cancelaciones[index].id_cancelacion,
+export const getAllCancelaciones = (populate = false) => {
+  const query = Cancelacion.find().sort({ createdAt: -1 });
+  if (populate) {
+    query.populate({
+      path: "id_turno",
+      populate: [
+        { path: "profesionalId" },
+        { path: "clienteId" }
+      ]
+    });
   }
-  saveCancelaciones(cancelaciones)
-  return cancelaciones[index]
-}
+  return query;
+};
+
+export const getCancelacionById = async (id, populate = false) => {
+  if (!mongoose.isObjectIdOrHexString(id)) return null;
+  const query = Cancelacion.findById(id);
+  if (populate) {
+    query.populate({
+      path: "id_turno",
+      populate: [
+        { path: "profesionalId" },
+        { path: "clienteId" }
+      ]
+    });
+  }
+  return query;
+};
+
+export const getCancelacionByTurnoId = (turnoId) =>
+  Cancelacion.findOne({ id_turno: turnoId });
+
+export const createCancelacion = async (data) => {
+  try {
+    return await Cancelacion.create(data);
+  } catch (error) {
+    if (error.code === 11000) {
+      const duplicateError = new Error("Ya existe una cancelación para este turno");
+      duplicateError.status = 409;
+      throw duplicateError;
+    }
+    throw error;
+  }
+};
+
+export const deleteCancelacion = (id) => Cancelacion.findByIdAndDelete(id);

@@ -29,4 +29,4 @@ const validarTelefono = (telefono) => {
 }
 
 
-module.exports = { validarDatos };
+export { validarDatos };

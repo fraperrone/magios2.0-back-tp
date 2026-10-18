@@ -1,8 +1,19 @@
+import express from "express";
+import * as cancelacionesController from "../controllers/cancelaciones.controller.js";
+import {
+  validarDatosCancelacion,
+  validarIdCancelacion
+} from "../middlewares/validacionesCancelaciones.js";
 
-const router = require('express').Router();
-const cancelacionesController = require('../controllers/cancelaciones.controller');
+const router = express.Router();
 
-router.get('/', cancelacionesController.getCancelaciones);
-router.post('/', cancelacionesController.createCancelacion);
+// GET /api/cancelaciones (listar todas)
+router.get("/", cancelacionesController.getCancelaciones);
 
-module.exports = router;
+// GET /api/cancelaciones/:id (detalle de cancelación)
+router.get("/:id", validarIdCancelacion, cancelacionesController.getCancelacionById);
+
+// POST /api/cancelaciones (registrar cancelación)
+router.post("/", validarDatosCancelacion, cancelacionesController.createCancelacion);
+
+export default router;

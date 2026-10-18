@@ -1,7 +1,9 @@
-const mongoose = require("mongoose");
-const Cliente = require("./models/Cliente.model");
-const fs = require("fs");
-require("dotenv").config();
+import mongoose from "mongoose";
+import Cliente from "./models/Cliente.model.js";
+import fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 filePath = "./data/clientes.json"; // Ruta al archivo JSON
 
