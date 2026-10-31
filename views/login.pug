@@ -1,0 +1,24 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Iniciar Sesión
+  body
+    h2 Iniciar Sesión
+    
+    //- Si la variable "error" existe, se renderiza este párrafo
+    if error
+      p(style="color: red;")= error
+    
+    form(action="/login", method="POST")
+      div
+        label(for="email") Correo electrónico:
+        input#email(type="text", name="user", required=true)
+      
+      div
+        label(for="password") Contraseña:
+        input#password(type="password", name="pass", required=true)
+      
+      div
+        button(type="submit") Ingresar
