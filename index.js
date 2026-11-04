@@ -50,6 +50,7 @@ app.use('/vista',authMiddleware, vistasRouter)
 // ==========================================
 // Rutas de API REST (Prefijo /api)
 // ==========================================
+app.use('/api', authMiddleware)
 app.use('/api/turnos', turnosRouter)
 app.use('/api/cancelaciones', cancelacionesRouter)
 app.use('/api/profesionales', profesionalesRouter)
@@ -59,16 +60,15 @@ app.use('/api/disponibilidades', disponibilidadRouter)
 // ==========================================
 // Rutas de compatibilidad hacia atrás
 // ==========================================
-app.use('/turnos', turnosRouter)
-app.use('/cancelaciones', cancelacionesRouter)
-app.use('/profesionales', profesionalesRouter)
-app.use('/clientes', clientesRouter)
-app.use('/disponibilidades', disponibilidadRouter)
+app.use('/turnos', authMiddleware, turnosRouter)
+app.use('/cancelaciones', authMiddleware, cancelacionesRouter)
+app.use('/profesionales', authMiddleware, profesionalesRouter)
+app.use('/clientes', authMiddleware, clientesRouter)
+app.use('/disponibilidades', authMiddleware, disponibilidadRouter)
 
 // ruta login
 
 app.post('/login', getToken)
-app.get('/login_validator', authMiddleware)
 
 // Middleware centralizado de manejo de errores
 app.use(handleErrors)

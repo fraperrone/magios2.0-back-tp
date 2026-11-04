@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "node index.js",
     "dev": "nodemon index.js",
+    "seed": "node seed.js",
     "test": "node --test tests/*.test.js"
   },
   "repository": {

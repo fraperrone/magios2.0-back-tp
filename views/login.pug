@@ -14,11 +14,11 @@ html(lang="es")
     form(action="/login", method="POST")
       div
         label(for="email") Correo electrónico:
-        input#email(type="text", name="user", value="admin" required=true)
+        input#email(type="text", name="user", required=true)
       
       div
         label(for="password") Contraseña:
-        input#password(type="password", name="pass", value="1234" required=true)
+        input#password(type="password", name="pass", required=true)
       
       div
         button(type="submit") Ingresar
