@@ -389,3 +389,12 @@ Se agrega la carpeta /aut donde se encapnsulan en los distintos archivos la logi
   - authRoutes.js: rutas para login y logout
 
 en index.js se agrega la ruta /login para poder loguearse y obtener el token de acceso.
+
+## se hostea la aplicacion en render.com y la base datos en mongo Atlas.
+
+url: http://magios2-0-back-tp.onrender.com/
+
+credenciales {
+  usuario: admin
+  password: admin1234
+}
