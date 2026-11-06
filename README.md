@@ -373,3 +373,19 @@ Documentación oficial de las tecnologías utilizadas:
 ## Repositorio
 
 https://github.com/fraperrone/magios2.0-back-tp
+
+## Entrega parte 3
+
+## Anexo parte 3 y modificaciones
+
+Se modifica el proyecto para haer depoloy en mongo atlas, se agrega middlewares para proteccion de rutas y se genera autenticacion con JWT token + cookies parser
+
+se agrega un usuario admin para poder loguearse y obtener el token de acceso, se agregan rutas protegidas para poder crear, modificar y eliminar profesionales, clientes y turnos.
+
+se agrega vista login con pug para poder loguearse y obtener el token de acceso.
+
+Se agrega la carpeta /aut donde se encapnsulan en los distintos archivos la logica de autenticacion, generacion de token y proteccion de rutas.
+  - authMiddleware.js: middleware para proteger rutas y verificar token
+  - authRoutes.js: rutas para login y logout
+
+en index.js se agrega la ruta /login para poder loguearse y obtener el token de acceso.
