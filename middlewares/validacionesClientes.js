@@ -1,5 +1,9 @@
 const validarDatos = (req, res, next) => {
-  const { nombre, email, telefono } = req.body || {};
+  const body = req.body || {};
+
+  const nombre = typeof body.nombre === 'string' ? body.nombre.trim() : '';
+  const email = typeof body.email === 'string' ? body.email.trim() : '';
+  const telefono = typeof body.telefono === 'string' ? body.telefono.trim() : '';
 
   if (!nombre || !email || !telefono) {
     return res.status(400).json({ message: 'nombre, email y telefono son obligatorios' });
@@ -15,6 +19,7 @@ const validarDatos = (req, res, next) => {
     return res.status(400).json({ message: 'telefono no es válido, debe tener 10 dígitos' });
   }
 
+  req.body = { ...body, nombre, email, telefono };
   next();
 };
 

@@ -109,22 +109,12 @@ export const crearTurno = async (req, res) => {
     const dia = diasSemana[new Date(Date.UTC(anio, mes - 1, diaNum)).getUTCDay()];
     const disponibilidades = await disponibilidadService.getByProfesional(profesionalId);
 
-    let tieneDisponibilidad = false;
-    if (disponibilidades && disponibilidades.length > 0) {
-      tieneDisponibilidad = disponibilidades.some((franja) =>
-        franja.activo !== false
-        && franja.dia.toLowerCase() === dia
-        && franja.horaInicio <= hora
-        && hora <= franja.horaFin
-      );
-    } else {
-      // Si el profesional no tiene franjas específicas configuradas, se admite horario laboral estándar
-      const esLaborable = dia !== "domingo";
-      const horarioValido = dia === "sabado"
-        ? (hora >= "08:00" && hora <= "14:00")
-        : (hora >= "08:00" && hora <= "20:00");
-      tieneDisponibilidad = esLaborable && horarioValido;
-    }
+    const tieneDisponibilidad = disponibilidades.some((franja) =>
+      franja.activo !== false
+      && franja.dia.toLowerCase() === dia
+      && franja.horaInicio <= hora
+      && hora <= franja.horaFin
+    );
 
     if (!tieneDisponibilidad) {
       return res.status(400).json({ error: "El profesional no tiene disponibilidad en ese horario" });
@@ -176,17 +166,25 @@ export const cambiarEstado = async (req, res) => {
       return res.status(404).json({ error: "Turno no encontrado" });
     }
 
-    if (estado === "reservado") {
-      const [profesionalOcupado, clienteDuplicado] = await Promise.all([
-        turnosService.getReservedByProfessional(turno.profesionalId, turno.fecha, turno.hora, id),
-        turnosService.getReservedByClient(turno.clienteId, turno.fecha, turno.hora, id)
-      ]);
-      if (profesionalOcupado) {
-        return res.status(409).json({ error: "El profesional ya tiene otro turno reservado en ese horario" });
+    if (turno.estado === estado) {
+      return res.status(409).json({ error: `El turno ya está en estado ${estado}` });
+    }
+
+    const transicionesPermitidas = {
+      reservado: ["atendido"],
+      cancelado: [],
+      atendido: [],
+    };
+
+    if (!transicionesPermitidas[turno.estado]?.includes(estado)) {
+      if (estado === "cancelado") {
+        return res.status(409).json({
+          error: "Para cancelar un turno usá POST /api/cancelaciones",
+        });
       }
-      if (clienteDuplicado) {
-        return res.status(409).json({ error: "El cliente ya tiene otro turno reservado en ese horario" });
-      }
+      return res.status(409).json({
+        error: `No se puede pasar de ${turno.estado} a ${estado}`,
+      });
     }
 
     const turnoActualizado = await turnosService.updateTurno(id, { estado });
@@ -326,22 +324,12 @@ export const crearTurnoDesdeVista = async (req, res) => {
     const dia = diasSemana[new Date(Date.UTC(anio, mes - 1, diaNum)).getUTCDay()];
     const disponibilidades = await disponibilidadService.getByProfesional(profesionalId);
 
-    let tieneDisponibilidad = false;
-    if (disponibilidades && disponibilidades.length > 0) {
-      tieneDisponibilidad = disponibilidades.some((franja) =>
-        franja.activo !== false
-        && franja.dia.toLowerCase() === dia
-        && franja.horaInicio <= hora
-        && hora <= franja.horaFin
-      );
-    } else {
-      // Si el profesional no tiene franjas específicas configuradas, se admite horario laboral estándar
-      const esLaborable = dia !== "domingo";
-      const horarioValido = dia === "sabado"
-        ? (hora >= "08:00" && hora <= "14:00")
-        : (hora >= "08:00" && hora <= "20:00");
-      tieneDisponibilidad = esLaborable && horarioValido;
-    }
+    const tieneDisponibilidad = disponibilidades.some((franja) =>
+      franja.activo !== false
+      && franja.dia.toLowerCase() === dia
+      && franja.horaInicio <= hora
+      && hora <= franja.horaFin
+    );
 
     if (!tieneDisponibilidad) {
       return res.redirect(`/vista/turnos?error=${encodeURIComponent("El profesional no tiene disponibilidad en ese horario")}`);

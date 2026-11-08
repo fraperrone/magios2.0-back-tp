@@ -7,7 +7,7 @@
     "id_cancelacion": 1
   },
   {
-    "id_turno": "6ad001bcc14fce39aaf3d274",
+    "id_turno": 2,
     "motivo": "El cliente no puede asistir",
     "fecha_cancelacion": "2026-10-14",
     "hora_cancelacion": "19:35",
