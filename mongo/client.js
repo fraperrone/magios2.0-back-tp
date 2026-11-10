@@ -7,22 +7,22 @@ const mongoUri = process.env.MONGODB_URI;
 
 const connectDB = async () => {
   if (!mongoUri) {
-    console.error(
-      "MONGODB_URI no está configurada. Copia .env.example como .env y configura la URI de MongoDB.",
+    console.warn(
+      "MONGODB_URI no está configurada. Continuando sin conexión a base de datos.",
     );
-    process.exit(1);
+    return;
   }
 
   try {
-    await mongoose.connect(mongoUri);
+    mongoose.set('bufferCommands', false);
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 2000 });
     console.log("Connected to MongoDB successfully");
   } catch (error) {
-    console.error(
+    console.warn(
       "Error connecting to MongoDB:",
       error.name || "Unknown error",
-      "- verify MONGODB_URI and database availability",
+      "- el servidor continúa en ejecución pero la base de datos no está disponible",
     );
-    process.exit(1);
   }
 };
 

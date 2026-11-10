@@ -1,5 +1,17 @@
 extends layout
 
 block content
-  h1 Home Page
-  p Welcome to the home page of our application.
+  .card
+    h2 Panel Principal - TurnoFlex
+    p Bienvenido al sistema de gestión de turnos y cancelaciones.
+    p Sesión activa como Administrador.
+
+  .card
+    h2 Accesos Rápidos
+    div(style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;")
+      a.btn(href="/vista/turnos") Gestionar Turnos
+      a.btn(href="/vista/cancelaciones") Cancelaciones
+      a.btn(href="/vista/profesionales") Profesionales
+      a.btn(href="/vista/clientes") Clientes
+      a.btn(href="/vista/disponibilidades") Disponibilidades
+      a.btn.btn-danger(href="/logout") Cerrar Sesión

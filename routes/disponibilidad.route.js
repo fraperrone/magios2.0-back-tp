@@ -4,19 +4,28 @@ import DisponibilidadController from "../controllers/disponibilidad.controller.j
 const router = express.Router();
 const disponibilidadController = new DisponibilidadController();
 
-// 1. Vistas (Definidas primero para que :id no capture "vista")
-router.get("/vista", disponibilidadController.renderDisponibilidades);
-router.get("/vista/:id", disponibilidadController.renderDisponibilidadById);
+// Redirecciones de compatibilidad hacia las rutas centralizadas de vistas (/vista/disponibilidades)
+router.get("/vista", (req, res) => res.redirect("/vista/disponibilidades"));
+router.get("/vista/:id", (req, res) => res.redirect(`/vista/disponibilidades/${req.params.id}`));
 
-// 2. Rutas literales y específicas de API (antes de :id)
-router.get(["/", "/api"], disponibilidadController.getAll);
-router.post(["/", "/api"], disponibilidadController.create);
-router.get(["/profesional/:profesionalId", "/api/profesional/:profesionalId"], disponibilidadController.getByProfesional);
-router.get(["/dia/:dia", "/api/dia/:dia"], disponibilidadController.getByDia);
+// Rutas de colección y filtros REST
+router.get("/", disponibilidadController.getAll);
+router.post("/", disponibilidadController.create);
+router.get("/profesional/:profesionalId", disponibilidadController.getByProfesional);
+router.get("/dia/:dia", disponibilidadController.getByDia);
 
-// 3. Rutas parametrizadas por :id (al final para evitar colisiones)
-router.get(["/:id", "/api/:id"], disponibilidadController.getById);
-router.put(["/:id", "/api/:id"], disponibilidadController.update);
-router.delete(["/:id", "/api/:id"], disponibilidadController.delete);
+// Rutas parametrizadas por ID
+router.get("/:id", disponibilidadController.getById);
+router.put("/:id", disponibilidadController.update);
+router.delete("/:id", disponibilidadController.delete);
+
+// Compatibilidad para endpoints con prefijo legado /api
+router.get("/api", disponibilidadController.getAll);
+router.post("/api", disponibilidadController.create);
+router.get("/api/profesional/:profesionalId", disponibilidadController.getByProfesional);
+router.get("/api/dia/:dia", disponibilidadController.getByDia);
+router.get("/api/:id", disponibilidadController.getById);
+router.put("/api/:id", disponibilidadController.update);
+router.delete("/api/:id", disponibilidadController.delete);
 
 export default router;
