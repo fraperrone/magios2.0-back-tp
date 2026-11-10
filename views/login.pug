@@ -32,16 +32,16 @@ html(lang="es")
       form(action="/login", method="POST")
         .form-group
           label(for="email") Correo electrónico / Usuario:
-          input#email(type="text", name="user", placeholder="admin@turnoflex.com", required=true)
+          input#email(type="text", name="user", placeholder="admin", required=true)
 
         .form-group
           label(for="password") Contraseña:
-          input#password(type="password", name="pass", placeholder="admin123", required=true)
+          input#password(type="password", name="pass", placeholder="admin1234", required=true)
 
         .form-group
           button(type="submit") Iniciar Sesión
 
       .demo-box
-        strong Credenciales por defecto (.env):
-        div Usuario: <code>admin@turnoflex.com</code>
-        div Contraseña: <code>admin123</code>
+        strong Credenciales del sistema (.env):
+        div Usuario: <code>admin</code>
+        div Contraseña: <code>admin1234</code>
