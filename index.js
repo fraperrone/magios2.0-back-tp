@@ -21,6 +21,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configuración de proxy para Cloud Run / iframe HTTPS
+app.set("trust proxy", 1);
+
 // Configuración del motor de plantillas Pug
 app.set("view engine", "pug");
 app.set("views", "./views");
@@ -40,11 +43,11 @@ app.use(cookieParser());
 // ==========================================
 app.get("/", (req, res) => {
   // Si ya tiene sesión válida, redirigir a /home
-  const token = req.cookies?.token;
+  const token = req.cookies?.token || req.query?.token;
   if (token && process.env.JWT_SECRET) {
     try {
       jwt.verify(token, process.env.JWT_SECRET);
-      return res.redirect("/home");
+      return res.redirect(`/home?token=${token}`);
     } catch {
       // Token inválido o expirado, muestra pantalla de login
     }

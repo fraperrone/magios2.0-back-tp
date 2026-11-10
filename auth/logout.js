@@ -1,8 +1,9 @@
 export const logout = (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none',
+    secure: true,
+    path: '/',
   });
 
   // Si la solicitud proviene de un navegador web (HTML), redirige a la pantalla de login

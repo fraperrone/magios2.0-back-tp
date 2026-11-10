@@ -60,3 +60,26 @@ html(lang="es")
         block content
       footer
         p © 2026 TurnoFlex – Sistema de Gestión de Turnos y Cancelaciones
+    script.
+      (function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var token = urlParams.get('token');
+        if (token) {
+          try { sessionStorage.setItem('turnoflex_token', token); } catch(e){}
+        } else {
+          try { token = sessionStorage.getItem('turnoflex_token'); } catch(e){}
+        }
+        if (token) {
+          try { document.cookie = 'token=' + encodeURIComponent(token) + '; path=/; max-age=86400; SameSite=None; Secure'; } catch(e){}
+          document.addEventListener('DOMContentLoaded', function() {
+            var links = document.querySelectorAll('nav a, a.btn');
+            links.forEach(function(a) {
+              var href = a.getAttribute('href');
+              if (href && href.startsWith('/') && !href.startsWith('/logout') && !href.includes('token=')) {
+                var sep = href.includes('?') ? '&' : '?';
+                a.setAttribute('href', href + sep + 'token=' + encodeURIComponent(token));
+              }
+            });
+          });
+        }
+      })();
