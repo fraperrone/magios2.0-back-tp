@@ -42,7 +42,7 @@ export const enviarMensaje = async (req, res) => {
 
     res.status(500).render("chat", {
       mensajes: req.session.historial || [],
-      error: "No se pudo obtener una respuesta."
+      error: error.message || "No se pudo obtener respuesta por error en el proveedor de servicio IA, intente mas tarde"
     });
 
   }
