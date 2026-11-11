@@ -14,6 +14,11 @@ import { getToken } from "./auth/getToken.js";
 import { authMiddleware } from "./auth/authMiddleware.js";
 import cookieParser from "cookie-parser";
 
+
+// chat route
+import chatRoutes from "./routes/chatRoute.js";
+
+
 dotenv.config();
 
 const app = express();
@@ -68,6 +73,10 @@ app.use("/cancelaciones", authMiddleware, cancelacionesRouter);
 app.use("/profesionales", authMiddleware, profesionalesRouter);
 app.use("/clientes", authMiddleware, clientesRouter);
 app.use("/disponibilidades", authMiddleware, disponibilidadRouter);
+
+// implementacion chat ia
+
+app.use("/chat", chatRoutes)
 
 // Middleware centralizado de manejo de errores
 app.use(handleErrors);

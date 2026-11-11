@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai'
-import conocimiento from '../data/chatConocimiento'
+import conocimiento from '../data/chatConocimiento.js'
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
