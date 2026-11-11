@@ -14,7 +14,7 @@ export const consultarGemini = async (historial, mensaje) => {
       ${conocimiento}
 
       PREGUNTA DEL USUARIO:
-      ${pregunta}
+      ${mensaje}
     `,
 
     config: {

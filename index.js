@@ -18,6 +18,9 @@ import cookieParser from "cookie-parser";
 // chat route
 import chatRoutes from "./routes/chatRoute.js";
 
+// modulo sesion para ia
+import session from "express-session";
+
 
 dotenv.config();
 
@@ -31,6 +34,13 @@ app.set("views", "./views");
 // Middlewares para parseo de JSON y datos de formularios web
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+//definimos session 
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized:true
+}))
 
 // Archivos estáticos
 app.use(express.static("public"));
