@@ -401,4 +401,4 @@ credenciales {
 
 ## se agrega el seed.js para poder completar la base de datos
 
-se ejecuta con el comando: node seed.js
+se ejecuta con el comando: en la ruta /seed
