@@ -18,7 +18,7 @@ const readData = (fileName) => JSON.parse(
 const objectId = () => new mongoose.Types.ObjectId()
 const keyFor = (id) => String(id)
 
-const runSeed = async () => {
+export const runSeed = async () => {
   const mongoUri = process.env.MONGODB_URI
   if (!mongoUri) {
     throw new Error('La variable MONGODB_URI no está configurada')
@@ -147,3 +147,5 @@ runSeed().catch((error) => {
   console.error('Error ejecutando el seed:', error.message)
   process.exitCode = 1
 })
+
+

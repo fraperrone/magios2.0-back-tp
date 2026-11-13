@@ -21,6 +21,9 @@ import chatRoutes from "./routes/chatRoute.js";
 // modulo sesion para ia
 import session from "express-session";
 
+// modulo seed
+import { runSeed } from "./seed.js";
+
 
 dotenv.config();
 
@@ -87,6 +90,15 @@ app.use("/disponibilidades", authMiddleware, disponibilidadRouter);
 // implementacion chat ia
 
 app.use("/chat", chatRoutes)
+
+
+// ruta seeder
+
+app.use("/seed", async (req, res) =>{
+  console.log("ejecutando seed...")
+  await runSeed()
+  res.status(200).json({message:"seed ejecutado correctamente"})
+})
 
 // Middleware centralizado de manejo de errores
 app.use(handleErrors);
