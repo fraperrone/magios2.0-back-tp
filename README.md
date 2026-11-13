@@ -21,6 +21,19 @@ El proyecto busca resolver los problemas de la administración manual de turnos,
 | **Carga inicial** | N/A | N/A | Script automatizado (`seed.js`) |
 | **Testing** | Postman local | Postman local | Tests automatizados (`npm test` 8/8) |
 
+## Despliegue en Producción (Deploy)
+
+El proyecto se encuentra desplegado y accesible públicamente:
+- **Hosting del servidor:** https://magios2-0-back-tp.onrender.com
+
+### Rutas principales en Render:
+- **Acceso a la interfaz web (Login):** `https://magios2-0-back-tp.onrender.com/vista/login`
+- **URL Base de la API (Endpoints de datos):** `https://magios2-0-back-tp.onrender.com/api`
+
+**Credenciales de acceso (Prueba):**
+- **Usuario (Admin):** `admin`
+- **Contraseña:** `admin1234`
+
 ## Arquitectura y Rutas
 
 El backend está organizado separando estrictamente la provisión de datos de las interfaces de usuario:
