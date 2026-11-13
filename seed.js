@@ -143,9 +143,9 @@ export const runSeed = async () => {
   }
 }
 
-runSeed().catch((error) => {
-  console.error('Error ejecutando el seed:', error.message)
-  process.exitCode = 1
-})
+// runSeed().catch((error) => {
+//   console.error('Error ejecutando el seed:', error.message)
+//   process.exitCode = 1
+// })
 
 
