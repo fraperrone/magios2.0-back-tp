@@ -81,12 +81,15 @@ export const createCancelacion = async (req, res) => {
       return res.status(404).json({ message: "Turno no encontrado" });
     }
     if (turno.estado === "cancelado") {
-      return res.status(400).json({ message: "El turno ya está cancelado" });
+      return res.status(409).json({ message: "El turno ya está cancelado" });
+    }
+    if (turno.estado === "atendido") {
+      return res.status(409).json({ message: "El turno ya está atendido y no se puede cancelar" });
     }
 
     const cancelacionExistente = await cancelacionesService.getCancelacionByTurnoId(id_turno);
     if (cancelacionExistente) {
-      return res.status(400).json({ message: "Ya existe una cancelación para este turno" });
+      return res.status(409).json({ message: "Ya existe una cancelación para este turno" });
     }
 
     const newCancelacion = await cancelacionesService.createCancelacion({
@@ -203,6 +206,9 @@ export const crearCancelacionDesdeVista = async (req, res) => {
     }
     if (turno.estado === "cancelado") {
       return res.redirect(`/vista/cancelaciones?error=${encodeURIComponent("El turno ya está cancelado")}`);
+    }
+    if (turno.estado === "atendido") {
+      return res.redirect(`/vista/cancelaciones?error=${encodeURIComponent("El turno ya está atendido y no se puede cancelar")}`);
     }
 
     const cancelacionExistente = await cancelacionesService.getCancelacionByTurnoId(id_turno);

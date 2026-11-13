@@ -10,6 +10,20 @@ import profesionalesRouter from "./routes/profesionales.route.js";
 import clientesRouter from "./routes/clientes.route.js";
 import disponibilidadRouter from "./routes/disponibilidad.route.js";
 import vistasRouter from "./routes/vistas.routes.js";
+import { getToken } from "./auth/getToken.js";
+import { authMiddleware } from "./auth/authMiddleware.js";
+import cookieParser from "cookie-parser";
+
+
+// chat route
+import chatRoutes from "./routes/chatRoute.js";
+
+// modulo sesion para ia
+import session from "express-session";
+
+// modulo seed
+import { runSeed } from "./seed.js";
+
 
 dotenv.config();
 
@@ -24,22 +38,40 @@ app.set("views", "./views");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+//definimos session 
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized:true
+}))
+
 // Archivos estáticos
 app.use(express.static("public"));
 
+//middleware para cookier-parser
+app.use(cookieParser());
+
 // Ruta raíz
 app.get("/", (req, res) => {
+  res.render("login");
+});
+// ruta login
+
+app.post("/login", getToken);
+
+app.get("/home", authMiddleware, (req, res) => {
   res.render("home", { title: "Inicio - TurnoFlex" });
 });
 
 // ==========================================
 // Rutas de Vistas UI (Prefijo /vista)
 // ==========================================
-app.use("/vista", vistasRouter);
+app.use("/vista", authMiddleware, vistasRouter);
 
 // ==========================================
 // Rutas de API REST (Prefijo /api)
 // ==========================================
+app.use("/api", authMiddleware);
 app.use("/api/turnos", turnosRouter);
 app.use("/api/cancelaciones", cancelacionesRouter);
 app.use("/api/profesionales", profesionalesRouter);
@@ -49,11 +81,24 @@ app.use("/api/disponibilidades", disponibilidadRouter);
 // ==========================================
 // Rutas de compatibilidad hacia atrás
 // ==========================================
-app.use("/turnos", turnosRouter);
-app.use("/cancelaciones", cancelacionesRouter);
-app.use("/profesionales", profesionalesRouter);
-app.use("/clientes", clientesRouter);
-app.use("/disponibilidades", disponibilidadRouter);
+app.use("/turnos", authMiddleware, turnosRouter);
+app.use("/cancelaciones", authMiddleware, cancelacionesRouter);
+app.use("/profesionales", authMiddleware, profesionalesRouter);
+app.use("/clientes", authMiddleware, clientesRouter);
+app.use("/disponibilidades", authMiddleware, disponibilidadRouter);
+
+// implementacion chat ia
+
+app.use("/chat", chatRoutes)
+
+
+// ruta seeder
+
+app.use("/seed", async (req, res) =>{
+  console.log("ejecutando seed...")
+  await runSeed()
+  res.status(200).json({message:"seed ejecutado correctamente"})
+})
 
 // Middleware centralizado de manejo de errores
 app.use(handleErrors);
@@ -66,4 +111,3 @@ app.listen(PORT, () => {
 });
 
 export default app;
-

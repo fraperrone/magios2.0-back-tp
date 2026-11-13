@@ -1,0 +1,28 @@
+extends layout
+block content
+    .chat-container
+
+      .chat-header
+        h3 Asistente IA
+        small Gemini
+
+      .chat-mensajes
+
+        if mensajes.length === 0
+          .bot ¡Hola! ¿En qué puedo ayudarte?
+
+        each mensaje in mensajes
+          div(class=mensaje.role === "user" ? "usuario" : "bot")
+            p= mensaje.text
+
+        if error
+          .error= error
+
+      form.chat-form(action="/chat/mensaje" method="POST")
+        input(
+          type="text"
+          name="mensaje"
+          placeholder="Escribí tu consulta..."
+          required
+        )
+        button(type="submit") Enviar

@@ -3,16 +3,25 @@ import mongoose from "mongoose";
 
 dotenv.config();
 
-// si no tiene el archivo .env, conecta a mongodb://localhost:27017/turnosdb
-const mongoUri = process.env.MONGODB_URI_ATLAS || "mongodb://localhost:27017/turnosdb";
+const mongoUri = process.env.MONGODB_URI;
 
 const connectDB = async () => {
+  if (!mongoUri) {
+    console.error(
+      "MONGODB_URI no está configurada. Copia .env.example como .env y configura la URI de MongoDB.",
+    );
+    process.exit(1);
+  }
+
   try {
-    console.log("intendado conectar a: " + mongoUri)
     await mongoose.connect(mongoUri);
     console.log("Connected to MongoDB successfully");
   } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
+    console.error(
+      "Error connecting to MongoDB:",
+      error.name || "Unknown error",
+      "- verify MONGODB_URI and database availability",
+    );
     process.exit(1);
   }
 };

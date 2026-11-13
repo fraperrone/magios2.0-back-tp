@@ -1,12 +1,3 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const dataPath = path.join(__dirname, '../data/clientes.json');
-
-
 // modificamos con mongoose para que se conecte a la base de datos y no al archivo json
 import cliente from "../models/Cliente.model.js";
 
